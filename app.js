@@ -34,7 +34,10 @@ const DEMO_INTERACTIONS = [
 
 // ── Init Grist ────────────────────────────────────────────
 grist.ready({
-  requiredAccess: 'full'});
+  requiredAccess: 'full',
+  columns: [],
+  allowSelectBy: true
+});
 
 grist.onRecords(records => {
   if (records && records.length > 0) {
