@@ -273,31 +273,22 @@ function renderPanelEdit(opp) {
     `<option value="${p}" ${p === opp.Priorite ? 'selected' : ''}>${p}</option>`
   ).join('');
 
+  // ✅ ENTREPRISE - Sans "Choisir"
+  const entrepriseOptions = allEntreprises.map(e =>
+    `<option value="${e.id}" ${e.id == opp.Entreprise ? 'selected' : ''}>${e.Nom}</option>`
+  ).join('');
+
+  // ✅ CONTACT - Sans "Choisir"
   const contactOptions = allContacts.map(c => {
-  const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
-  return `<option value="${c.id}" ${parseInt(c.id) === parseInt(opp.contact_principale) ? 'selected' : ''}>${nom}</option>`;
-}).join('');
+    const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
+    return `<option value="${c.id}" ${c.id == opp.contact_principale ? 'selected' : ''}>${nom}</option>`;
+  }).join('');
 
-
- const entrepriseSelect = allEntreprises.find(e => e.id == opp.Entreprise);
-const entrepriseOptions = allEntreprises.map(e =>
-  `<option value="${e.id}" ${e.id == opp.Entreprise ? 'selected' : ''}>${e.Nom}</option>`
-).join('');
-
-const contactSelect = allContacts.find(c => c.id == opp.contact_principale);
-const contactOptions = allContacts.map(c => {
-  const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
-  return `<option value="${c.id}" ${c.id == opp.contact_principale ? 'selected' : ''}>${nom}</option>`;
-}).join('');
-
-
-
+  // ✅ ASSIGNEE - Sans "Choisir"
   const assigneeOptions = allContacts.map(c => {
-  const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
-  return `<option value="${c.id}" ${parseInt(c.id) === parseInt(opp.assignee_a) ? 'selected' : ''}>${nom}</option>`;
-}).join('');
-
-
+    const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
+    return `<option value="${c.id}" ${c.id == opp.assignee_a ? 'selected' : ''}>${nom}</option>`;
+  }).join('');
 
   const closingVal = opp.date_closing_estimee
     ? (typeof opp.date_closing_estimee === 'number'
@@ -313,14 +304,12 @@ const contactOptions = allContacts.map(c => {
     <div class="detail-item">
       <span class="detail-label">Entreprise</span>
       <select class="detail-input" id="edit-entreprise">
-        <option value="0">— Choisir —</option>
         ${entrepriseOptions}
       </select>
     </div>
     <div class="detail-item">
       <span class="detail-label">Contact principal</span>
       <select class="detail-input" id="edit-contact">
-        <option value="0">— Choisir —</option>
         ${contactOptions}
       </select>
     </div>
@@ -347,7 +336,6 @@ const contactOptions = allContacts.map(c => {
     <div class="detail-item">
       <span class="detail-label">Assigné à</span>
       <select class="detail-input" id="edit-assignee">
-        <option value="0">— Choisir —</option>
         ${assigneeOptions}
       </select>
     </div>
@@ -364,6 +352,7 @@ const contactOptions = allContacts.map(c => {
   document.getElementById('btn-save-fiche').addEventListener('click',   () => saveFiche(opp));
   document.getElementById('btn-cancel-edit').addEventListener('click',  () => closePanel());
 }
+
 
 async function saveFiche(opp) {
   const newTitre      = document.getElementById('edit-titre').value.trim();
