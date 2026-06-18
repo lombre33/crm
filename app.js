@@ -34,20 +34,7 @@ const DEMO_INTERACTIONS = [
 
 // ── Init Grist ────────────────────────────────────────────
 grist.ready({
-  requiredAccess: 'full',
-  columns: [
-    { name: 'Titre', type: 'Text' },
-    { name: 'Entreprise', type: 'Text' },
-    { name: 'Contact_principal', type: 'Text' },
-    { name: 'Statut', type: 'Choice' },
-    { name: 'Priorite', type: 'Choice' },
-    { name: 'Valeur_estimee', type: 'Numeric' },
-    { name: 'Date_creation', type: 'Date' },
-    { name: 'Date_closing_estimee', type: 'Date' },
-    { name: 'Responsable', type: 'Text' },
-    { name: 'Description', type: 'Text' },
-  ]
-});
+  requiredAccess: 'full'});
 
 grist.onRecords(records => {
   if (records && records.length > 0) {
