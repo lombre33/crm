@@ -99,17 +99,17 @@ function normalizeOpp(r) {
 function enrichOpps() {
   allOpportunites.forEach(opp => {
     const ent = allEntreprises.find(e => e.id === opp.Entreprise);
-    opp._entrepriseNom = ent ? ent.Nom : (opp.Entreprise ? '(Entreprise #' + opp.Entreprise + ')' : '—');
+    opp._entrepriseNom = ent ? ent.Nom : (opp.Entreprise ? '(' + opp.Entreprise + ')' : '—');
 
     const contact = allContacts.find(c => c.id === opp.contact_principale);
     opp._contactNom = contact
       ? (contact.nom_prenom || (contact.Prenom + ' ' + contact.Nom).trim())
-      : (opp.contact_principale ? '(Contact #' + opp.contact_principale + ')' : '—');
+      : (opp.contact_principale ? '(' + opp.contact_principale + ')' : '—');
 
     const assignee = allContacts.find(c => c.id === opp.assignee_a);
     opp._assigneeNom = assignee
       ? (assignee.nom_prenom || (assignee.Prenom + ' ' + assignee.Nom).trim())
-      : (opp.assignee_a ? '(Agent #' + opp.assignee_a + ')' : '—');
+      : (opp.assignee_a ? '(' + opp.assignee_a + ')' : '—');
   });
 }
 
