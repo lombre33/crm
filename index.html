@@ -448,6 +448,11 @@
     .quick-action.email .icon { background: var(--col-discussion-bg); }
     .quick-action.note .icon { background: var(--col-proposition-bg); }
     .quick-action.rdv .icon { background: var(--col-gagne-bg); }
+    .quick-action.contact .icon { 
+  background: #e0e7ff; 
+  color: #6366f1; 
+}
+
     .quick-action span { font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); }
 
     /* === TIMELINE === */
@@ -790,8 +795,7 @@
       <div class="panel-contact" id="panel-contact">—</div>
       <div class="panel-status" id="panel-status"></div>
       <div class="panel-amount" id="panel-amount"></div>
-      <div id="inter-detail-overlay" class="modal-overlay">
-  <div id="inter-detail-modal" class="modal-content"></div>
+      
 </div>
 
     </div>
@@ -803,20 +807,23 @@
 
     <div class="panel-section">
       <div class="panel-section-title">Actions rapides</div>
-      <div class="quick-actions">
-        <div class="quick-action phone" data-type="Appel">
-          <div class="icon">📞</div><span>Appel</span>
-        </div>
-        <div class="quick-action email" data-type="Email">
-          <div class="icon">📧</div><span>Email</span>
-        </div>
-        <div class="quick-action note" data-type="Note">
-          <div class="icon">📝</div><span>Note</span>
-        </div>
-        <div class="quick-action rdv" data-type="Réunion">
-          <div class="icon">📅</div><span>RDV</span>
-        </div>
-      </div>
+     <div class="quick-actions">
+  <div class="quick-action phone" onclick="callContact()">
+    <div class="icon">📞</div><span>Appel</span>
+  </div>
+  <div class="quick-action email" onclick="sendEmail()">
+    <div class="icon">📧</div><span>Email</span>
+  </div>
+  <div class="quick-action note" data-type="Note" onclick="currentActionType='Note'; openQuickActionModal('Note')">
+    <div class="icon">📝</div><span>Note</span>
+  </div>
+  <div class="quick-action rdv" data-type="Réunion" onclick="currentActionType='Réunion'; openQuickActionModal('Réunion')">
+    <div class="icon">📅</div><span>RDV</span>
+  </div>
+  <div class="quick-action contact" onclick="openAddContactToOpp()">
+    <div class="icon">👥</div><span>+ Contact</span>
+  </div>
+</div>
     </div>
 
     <div class="panel-section">
@@ -828,6 +835,8 @@
       <button class="btn-edit" id="btn-edit-fiche">✏️ Éditer la fiche complète</button>
     </div>
   </aside>
+  <div id="inter-detail-overlay" class="modal-overlay">
+  <div id="inter-detail-modal" class="modal-content"></div>
 
   <!-- MODAL QUICK ACTION -->
   <div class="modal-overlay" id="modal-overlay">
