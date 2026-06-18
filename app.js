@@ -850,4 +850,119 @@ async function deleteInteraction(interactionId) {
   if (currentOpp) renderTimeline(currentOpp);
   closeInteractionDetail();
 }
+// ════════════════════════════════════════════════════════
+//  ACTIONS RAPIDES AMÉLIORÉES
+// ════════════════════════════════════════════════════════
+
+function callContact() {
+  if (!currentOpp) return;
+  
+  const contact = allContacts.find(c => c.id === currentOpp.contact);
+  if (!contact || !contact.Telephone) {
+    showToast('❌ Aucun numéro pour ce contact');
+    return;
+  }
+  
+  navigator.clipboard.writeText(contact.Telephone).then(() => {
+    showToast(`📞 Numéro copié: ${contact.Telephone}`);
+  });
+  
+  const telLink = `tel:${contact.Telephone}`;
+  window.location.href = telLink;
+  
+  logInteraction('Appel', contact.id, `Appel vers ${contact.Telephone}`);
+}
+
+function sendEmail() {
+  if (!currentOpp) return;
+  
+  const contact = allContacts.find(c => c.id === currentOpp.contact);
+  if (!contact || !contact.Email) {
+    showToast('❌ Aucun email pour ce contact');
+    return;
+  }
+  
+  const subject = `CRM PUI - ${currentOpp.Titre || 'Opportunité'}`;
+  const body = `Bonjour,\n\nJe vous contacte concernant votre opportunité.\n\nCordialement,\n[Votre nom]`;
+  
+  const mailtoLink = `mailto:${contact.Email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailtoLink;
+  
+  logInteraction('Email', contact.id, `Email envoyé à ${contact.Email}`);
+}
+
+function openAddContactToOpp() {
+  if (!currentOpp) return;
+  
+  const modal = document.getElementById('modal-overlay');
+  const modalTitle = document.getElementById('modal-title');
+  const modalNote = document.getElementById('modal-note');
+  
+  modalTitle.textContent = '👥 Ajouter un contact';
+  
+  // Vider le modal
+  const oldSelect = document.getElementById('select-contact');
+  if (oldSelect) oldSelect.parentElement.parentElement.remove();
+  
+  const html = `
+    <div style="margin-bottom: 16px;">
+      <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; display: block; margin-bottom: 8px;">
+        Sélectionner un contact
+      </label>
+      <select id="select-contact" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit;">
+        <option value="">-- Choisir un contact --</option>
+        ${allContacts.map(c => {
+          const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
+          return `<option value="${c.id}">${nom}</option>`;
+        }).join('')}
+      </select>
+    </div>
+  `;
+  
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  modalNote.parentElement.parentElement.insertBefore(container, modalNote.parentElement);
+  modalNote.parentElement.style.display = 'none';
+  
+  document.getElementById('modal-confirm').textContent = '✅ Ajouter le contact';
+  document.getElementById('modal-confirm').onclick = () => {
+    const contactId = document.getElementById('select-contact').value;
+    if (!contactId) {
+      showToast('❌ Veuillez sélectionner un contact');
+      return;
+    }
+    
+    addContactToOpportunity(currentOpp.id, contactId);
+  };
+  
+  modal.classList.add('open');
+}
+
+async function addContactToOpportunity(oppId, contactId) {
+  try {
+    const opp = allOpportunites.find(o => o.id === oppId);
+    if (!opp) return;
+    
+    let contacts = opp.contacts_lies || [];
+    if (typeof contacts === 'string') contacts = contacts.split(',').map(c => c.trim());
+    
+    if (!contacts.includes(contactId)) {
+      contacts.push(contactId);
+    }
+    
+    await grist.docApi.applyUserActions([
+      ['UpdateRecord', 'Opportunites', oppId, {
+        'contacts_lies': contacts.join(', ')
+      }]
+    ]);
+    
+    showToast('✅ Contact ajouté');
+    refreshPanel();
+    document.getElementById('modal-overlay').classList.remove('open');
+  } catch (err) {
+    console.error('Erreur:', err);
+    showToast('❌ Erreur');
+  }
+}
+
 
