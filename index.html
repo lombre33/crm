@@ -296,6 +296,79 @@
     .add-card-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(37,99,235,0.03); }
 
     /* === SIDE PANEL === */
+
+    #inter-detail-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1001;
+  align-items: center;
+  justify-content: center;
+}
+
+#inter-detail-overlay.open {
+  display: flex;
+}
+
+.inter-detail-content {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.inter-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 15px;
+}
+
+.inter-detail-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.btn-close-inter {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.inter-detail-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
     .side-panel {
       position: fixed;
       top: 64px; right: -440px;
@@ -715,6 +788,10 @@
       <div class="panel-contact" id="panel-contact">—</div>
       <div class="panel-status" id="panel-status"></div>
       <div class="panel-amount" id="panel-amount"></div>
+      <div id="inter-detail-overlay" class="modal-overlay">
+  <div id="inter-detail-modal" class="modal-content"></div>
+</div>
+
     </div>
 
     <div class="panel-section">
