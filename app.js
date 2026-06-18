@@ -274,18 +274,22 @@ function renderPanelEdit(opp) {
   ).join('');
 
   const contactOptions = allContacts.map(c => {
-    const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
-    return `<option value="${c.id}" ${c.id === opp.contact_principale ? 'selected' : ''}>${nom}</option>`;
-  }).join('');
+  const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
+  return `<option value="${c.id}" ${parseInt(c.id) === parseInt(opp.contact_principale) ? 'selected' : ''}>${nom}</option>`;
+}).join('');
+
 
   const entrepriseOptions = allEntreprises.map(e =>
-    `<option value="${e.id}" ${e.id === opp.Entreprise ? 'selected' : ''}>${e.Nom}</option>`
-  ).join('');
+  `<option value="${e.id}" ${parseInt(e.id) === parseInt(opp.Entreprise) ? 'selected' : ''}>${e.Nom}</option>`
+).join('');
+
 
   const assigneeOptions = allContacts.map(c => {
-    const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
-    return `<option value="${c.id}" ${c.id === opp.assignee_a ? 'selected' : ''}>${nom}</option>`;
-  }).join('');
+  const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
+  return `<option value="${c.id}" ${parseInt(c.id) === parseInt(opp.assignee_a) ? 'selected' : ''}>${nom}</option>`;
+}).join('');
+
+
 
   const closingVal = opp.date_closing_estimee
     ? (typeof opp.date_closing_estimee === 'number'
