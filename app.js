@@ -1,7 +1,7 @@
 // ════════════════════════════════════════════════════════
 //  CRM PUI — Université de Bordeaux
 //  Widget Grist — JS principal
-//  Version 0.3 — Juin 2026
+//  Version 0.4 — Juin 2026
 // ════════════════════════════════════════════════════════
 
 // ── État global ──────────────────────────────────────────
@@ -35,6 +35,7 @@ grist.docApi.fetchTable('Annuaire').then(data => {
     Poste             : data.Poste?.[i]              || '',
     Structure         : data.Structure?.[i]          || 0,
   }));
+  console.log('✅ Annuaire chargé:', allContacts.length, 'contacts');
 }).catch(e => console.warn('Annuaire non chargé', e));
 
 // Chargement table Entreprise
@@ -47,33 +48,44 @@ grist.docApi.fetchTable('Entreprise').then(data => {
     site_web_: data.site_web_?.[i] || '',
     Ville   : data.Ville?.[i]    || '',
   }));
+  console.log('✅ Entreprises chargées:', allEntreprises.length);
 }).catch(e => console.warn('Entreprise non chargé', e));
+
+// Chargement table Opportunites
+grist.docApi.fetchTable('Opportunites').then(data => {
+  allOpportunites = data.id.map((id, i) => normalizeOpp({
+    id,
+    titre               : data.titre?.[i]                || '',
+    statut              : data.statut?.[i]               || 'Prospect',
+    Priorite            : data.Priorite?.[i]             || 'Moyenne',
+    valeur_estilmee     : data.valeur_estilmee?.[i]      || 0,
+    date_closing_estimee: data.date_closing_estimee?.[i] || '',
+    description         : data.description?.[i]          || '',
+    Entreprise          : data.Entreprise?.[i]           || 0,
+    contact_principale  : data.contact_principale?.[i]   || 0,
+    assignee_a          : data.assignee_a?.[i]           || 0,
+  }));
+  enrichOpps();
+  gristReady = true;
+  renderKanban();
+  console.log('✅ Opportunites chargées:', allOpportunites.length);
+}).catch(e => console.warn('Opportunites non chargé', e));
 
 // Chargement table Interactions
 grist.docApi.fetchTable('Interactions').then(data => {
   allInteractions = data.id.map((id, i) => ({
     id,
-    type_interaction : data.type_interaction?.[i] || '',
-    Date             : data.Date?.[i]             || '',
-    contact          : data.contact?.[i]          || 0,
-    Opportunite      : data.Opportunite?.[i]      || 0,
-    Assigne          : data.Assigne?.[i]          || 0,
-    contenu          : data.contenu?.[i]          || '',
-    duree            : data.duree?.[i]            || 0,
+    type_interaction: data.type_interaction?.[i] || 'Note',
+    Date            : data.Date?.[i]              || 0,
+    contact         : data.contact?.[i]           || 0,
+    Opportunite     : data.Opportunite?.[i]       || 0,
+    Assigne         : data.Assigne?.[i]           || 0,
+    contenu         : data.contenu?.[i]           || '',
+    duree           : data.duree?.[i]             || 0,
   }));
+  allInteractions.forEach(i => resolveInteractionNames(i));
+  console.log('✅ Interactions chargées:', allInteractions.length);
 }).catch(e => console.warn('Interactions non chargé', e));
-
-// Chargement table Opportunites (principal)
-grist.onRecords(records => {
-  if (records && records.length > 0) {
-    gristReady = true;
-    allOpportunites = records.map(r => normalizeOpp(r));
-    enrichOpps();
-    renderKanban();
-  } else {
-    renderKanban();
-  }
-});
 
 // ════════════════════════════════════════════════════════
 //  NORMALISATION & ENRICHISSEMENT
@@ -152,43 +164,36 @@ function renderKanban() {
 
 function createCard(opp) {
   const card = document.createElement('div');
-  card.className  = 'opportunity-card';
-  card.draggable  = true;
+  card.className = 'opportunity-card';
+  card.draggable = true;
   card.dataset.id = opp.id;
 
-  const dateRel = opp.date_closing_estimee
-    ? '🎯 ' + formatDate(opp.date_closing_estimee)
-    : '';
+  const statusColor = {
+    Prospect       : '#2563eb',
+    'En discussion': '#d97706',
+    Proposition    : '#7c3aed',
+    Gagné          : '#059669',
+    Perdu          : '#dc2626'
+  }[opp.statut] || '#6b7280';
 
   card.innerHTML = `
-    <div class="card-title">${opp.titre}</div>
-    <div class="card-company">${opp._entrepriseNom}</div>
-    <div class="card-contact">👤 ${opp._contactNom}</div>
-    <div class="card-meta">
-      <div class="card-amount">${formatEuros(opp.valeur_estilmee)}</div>
-      <div class="card-priority priority-${opp.Priorite}">${opp.Priorite}</div>
+    <div class="card-header">
+      <div class="card-title">${escHtml(opp.titre)}</div>
+      <div class="card-status" style="background-color: ${statusColor}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">
+        ${opp.statut}
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-line">🏢 ${escHtml(opp._entrepriseNom)}</div>
+      <div class="card-line">👤 ${escHtml(opp._contactNom)}</div>
+      <div class="card-line">💰 ${formatEuros(opp.valeur_estilmee)}</div>
     </div>
     <div class="card-footer">
-      <div class="card-actions">
-        <button class="card-action" data-action="Appel"   title="Appel">📞</button>
-        <button class="card-action" data-action="Email"   title="Email">📧</button>
-        <button class="card-action" data-action="Note"    title="Note">📝</button>
-        <button class="card-action" data-action="Réunion" title="Réunion">📅</button>
-      </div>
-      <div class="card-date">${dateRel}</div>
+      <div class="card-meta">${opp.Priorite}</div>
     </div>
   `;
 
-  card.addEventListener('click', e => {
-    if (!e.target.closest('.card-action')) openPanelEdit(opp);
-  });
-
-  card.querySelectorAll('.card-action').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      openModal(btn.dataset.action, opp);
-    });
-  });
+  card.addEventListener('click', () => openPanelEdit(opp));
 
   return card;
 }
@@ -264,6 +269,12 @@ function openPanelEdit(opp) {
   document.getElementById('overlay').classList.add('visible');
 }
 
+function closePanel() {
+  document.getElementById('side-panel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('visible');
+  currentOpp = null;
+}
+
 function renderPanelEdit(opp) {
   const statutOptions = STATUTS.map(s =>
     `<option value="${s}" ${s === opp.statut ? 'selected' : ''}>${s}</option>`
@@ -273,18 +284,15 @@ function renderPanelEdit(opp) {
     `<option value="${p}" ${p === opp.Priorite ? 'selected' : ''}>${p}</option>`
   ).join('');
 
-  // ✅ ENTREPRISE - Sans "Choisir"
   const entrepriseOptions = allEntreprises.map(e =>
     `<option value="${e.id}" ${e.id == opp.Entreprise ? 'selected' : ''}>${e.Nom}</option>`
   ).join('');
 
-  // ✅ CONTACT - Sans "Choisir"
   const contactOptions = allContacts.map(c => {
     const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
     return `<option value="${c.id}" ${c.id == opp.contact_principale ? 'selected' : ''}>${nom}</option>`;
   }).join('');
 
-  // ✅ ASSIGNEE - Sans "Choisir"
   const assigneeOptions = allContacts.map(c => {
     const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
     return `<option value="${c.id}" ${c.id == opp.assignee_a ? 'selected' : ''}>${nom}</option>`;
@@ -296,63 +304,141 @@ function renderPanelEdit(opp) {
         : String(opp.date_closing_estimee).slice(0,10))
     : '';
 
-  document.getElementById('panel-details').innerHTML = `
-    <div class="detail-item">
-      <span class="detail-label">Titre</span>
-      <input class="detail-input" id="edit-titre" value="${escHtml(opp.titre)}">
+  const panelContent = document.getElementById('panel-content');
+  panelContent.innerHTML = `
+    <div class="panel-section">
+      <div class="panel-section-title">Éditer la fiche</div>
+      <div>
+        <label>Titre</label>
+        <input type="text" id="edit-titre" value="${escHtml(opp.titre)}">
+      </div>
+      <div>
+        <label>Entreprise</label>
+        <select id="edit-entreprise">${entrepriseOptions}</select>
+      </div>
+      <div>
+        <label>Contact principal</label>
+        <select id="edit-contact">${contactOptions}</select>
+      </div>
+      <div>
+        <label>Statut</label>
+        <select id="edit-statut">${statutOptions}</select>
+      </div>
+      <div>
+        <label>Priorité</label>
+        <select id="edit-priorite">${prioriteOptions}</select>
+      </div>
+      <div>
+        <label>Valeur estimée (€)</label>
+        <input type="number" id="edit-valeur" value="${opp.valeur_estilmee || 0}">
+      </div>
+      <div>
+        <label>Date de closing estimée</label>
+        <input type="date" id="edit-closing" value="${closingVal}">
+      </div>
+      <div>
+        <label>Assigné à</label>
+        <select id="edit-assignee">${assigneeOptions}</select>
+      </div>
+      <div>
+        <label>Description</label>
+        <textarea id="edit-description" style="min-height: 80px;">${escHtml(opp.description)}</textarea>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 14px;">
+        <button id="btn-save-fiche" style="flex: 1; background: #10b981; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+          💾 Enregistrer
+        </button>
+        <button id="btn-cancel-edit" style="flex: 1; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+          ✕ Annuler
+        </button>
+      </div>
     </div>
-    <div class="detail-item">
-      <span class="detail-label">Entreprise</span>
-      <select class="detail-input" id="edit-entreprise">
-        ${entrepriseOptions}
-      </select>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Actions directes</div>
+      <div class="quick-actions">
+        <div class="quick-action phone" onclick="showCallNumber()" style="cursor: pointer;">
+          <div class="icon">📞</div><span>Appel</span>
+        </div>
+        <div class="quick-action email" onclick="openEmailLink()" style="cursor: pointer;">
+          <div class="icon">📧</div><span>Email</span>
+        </div>
+        <div class="quick-action contact" onclick="openAddContactModal()" style="cursor: pointer;">
+          <div class="icon">👥</div><span>+ Contact</span>
+        </div>
+      </div>
     </div>
-    <div class="detail-item">
-      <span class="detail-label">Contact principal</span>
-      <select class="detail-input" id="edit-contact">
-        ${contactOptions}
-      </select>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Logger une interaction</div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; display: block; margin-bottom: 6px;">
+            Type d'interaction
+          </label>
+          <select id="interaction-type" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; font-size: 0.85rem;">
+            <option value="Appel">📞 Appel</option>
+            <option value="Email">📧 Email</option>
+            <option value="Note">📝 Note</option>
+            <option value="Réunion">📅 Réunion</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; display: block; margin-bottom: 6px;">
+            Contenu
+          </label>
+          <textarea id="interaction-content" placeholder="Décrivez l'interaction..." 
+            style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; font-size: 0.85rem; min-height: 70px; resize: vertical;"></textarea>
+        </div>
+        <button id="btn-log-interaction" style="background: #2563eb; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: inherit;">
+          ✅ Logger l'interaction
+        </button>
+      </div>
     </div>
-    <div class="detail-item">
-      <span class="detail-label">Statut</span>
-      <select class="detail-input" id="edit-statut">
-        ${statutOptions}
-      </select>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Priorité</span>
-      <select class="detail-input" id="edit-priorite">
-        ${prioriteOptions}
-      </select>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Valeur estimée (€)</span>
-      <input class="detail-input" type="number" id="edit-valeur" value="${opp.valeur_estilmee || 0}">
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Closing estimé</span>
-      <input class="detail-input" type="date" id="edit-closing" value="${closingVal}">
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Assigné à</span>
-      <select class="detail-input" id="edit-assignee">
-        ${assigneeOptions}
-      </select>
-    </div>
-    <div class="detail-item detail-full">
-      <span class="detail-label">Description</span>
-      <textarea class="detail-input detail-textarea" id="edit-description">${escHtml(opp.description || '')}</textarea>
-    </div>
-    <div class="detail-item detail-full detail-actions">
-      <button class="btn-save" id="btn-save-fiche">💾 Enregistrer</button>
-      <button class="btn-cancel-edit" id="btn-cancel-edit">✕ Fermer</button>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Timeline</div>
+      <div id="timeline-container"></div>
     </div>
   `;
 
-  document.getElementById('btn-save-fiche').addEventListener('click',   () => saveFiche(opp));
-  document.getElementById('btn-cancel-edit').addEventListener('click',  () => closePanel());
+  document.getElementById('btn-save-fiche').addEventListener('click',  () => saveFiche(opp));
+  document.getElementById('btn-cancel-edit').addEventListener('click', () => closePanel());
+  document.getElementById('btn-log-interaction').addEventListener('click', () => logInteractionFromPanel());
 }
 
+function renderTimeline(opp) {
+  const interactions = allInteractions.filter(i => i.Opportunite === opp.id);
+  const timeline = document.getElementById('timeline-container');
+  if (!timeline) return;
+
+  const items = interactions.sort((a, b) => (b.Date || 0) - (a.Date || 0));
+
+  timeline.innerHTML = items.map(item => `
+    <div class="timeline-item" data-inter-id="${item.id}" style="cursor: pointer;">
+      <div class="timeline-dot">${INTERACTION_ICONS[item.type_interaction] || '💬'}</div>
+      <div class="timeline-content">
+        <div class="timeline-title">
+          ${item.type_interaction}
+          ${item.duree ? ' — ' + item.duree + ' min' : ''}
+        </div>
+        <div class="timeline-body">${item.contenu}</div>
+        <div class="timeline-date">
+          ${formatDatetime(item.Date)}
+          ${item._assigneeNom !== '—' ? ' · ' + item._assigneeNom : ''}
+          ${item._contactNom  !== '—' ? ' · ' + item._contactNom  : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.timeline-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const interId = parseInt(el.dataset.interId);
+      openInteractionDetail(interId);
+    });
+  });
+}
 
 async function saveFiche(opp) {
   const newTitre      = document.getElementById('edit-titre').value.trim();
@@ -396,7 +482,6 @@ async function saveFiche(opp) {
     showToast('✅ Fiche enregistrée (démo)');
   }
 
-  // Mise à jour locale
   opp.titre                = newTitre;
   opp.Entreprise           = newEntreprise;
   opp.contact_principale   = newContact;
@@ -407,121 +492,166 @@ async function saveFiche(opp) {
   opp.assignee_a           = newAssignee;
   opp.description          = newDesc;
 
-  // Re-enrichir noms
-  const ent = allEntreprises.find(e => e.id === newEntreprise);
-  opp._entrepriseNom = ent ? ent.Nom : '—';
-  const ct = allContacts.find(c => c.id === newContact);
-  opp._contactNom = ct ? (ct.nom_prenom || (ct.Prenom + ' ' + ct.Nom).trim()) : '—';
-  const ag = allContacts.find(c => c.id === newAssignee);
-  opp._assigneeNom = ag ? (ag.nom_prenom || (ag.Prenom + ' ' + ag.Nom).trim()) : '—';
-
-  // Rafraîchir header du panel
-  document.getElementById('panel-company').textContent = opp._entrepriseNom;
-  document.getElementById('panel-contact').textContent = '👤 ' + opp._contactNom;
-  const statusEl = document.getElementById('panel-status');
-  statusEl.textContent      = opp.statut;
-  statusEl.style.background = statusBg(opp.statut);
-  statusEl.style.color      = statusColor(opp.statut);
-  document.getElementById('panel-amount').textContent = formatEuros(opp.valeur_estilmee);
-
-  renderPanelEdit(opp);
+  enrichOpps();
   renderKanban();
-}
-
-function closePanel() {
-  document.getElementById('side-panel').classList.remove('open');
-  document.getElementById('overlay').classList.remove('visible');
-  currentOpp = null;
+  renderPanelEdit(opp);
+  renderTimeline(opp);
 }
 
 // ════════════════════════════════════════════════════════
-//  TIMELINE INTERACTIONS
+//  ACTIONS RAPIDES
 // ════════════════════════════════════════════════════════
-function renderTimeline(opp) {
-  const timeline = document.getElementById('panel-timeline');
-  const items = allInteractions
-    .filter(i => i.Opportunite === opp.id)
-    .map(i => resolveInteractionNames({...i}))
-    .sort((a, b) => {
-      const da = typeof a.Date === 'number' ? a.Date : new Date(a.Date).getTime() / 1000;
-      const db = typeof b.Date === 'number' ? b.Date : new Date(b.Date).getTime() / 1000;
-      return db - da;
-    });
 
-  if (items.length === 0) {
-    timeline.innerHTML = '<div class="timeline-empty">Aucune interaction enregistrée</div>';
+function showCallNumber() {
+  if (!currentOpp) return;
+  
+  const contact = allContacts.find(c => c.id === currentOpp.contact_principale);
+  if (!contact) {
+    showToast('❌ Aucun contact assigné');
     return;
   }
 
-  timeline.innerHTML = items.map(item => `
-    <div class="timeline-item" data-inter-id="${item.id}" style="cursor: pointer;">
-      <div class="timeline-dot">${INTERACTION_ICONS[item.type_interaction] || '💬'}</div>
-      <div class="timeline-content">
-        <div class="timeline-title">
-          ${item.type_interaction}
-          ${item.duree ? ' — ' + item.duree + ' min' : ''}
-        </div>
-        <div class="timeline-body">${item.contenu}</div>
-        <div class="timeline-date">
-          ${formatDatetime(item.Date)}
-          ${item._assigneeNom !== '—' ? ' · ' + item._assigneeNom : ''}
-          ${item._contactNom  !== '—' ? ' · ' + item._contactNom  : ''}
-        </div>
-      </div>
-    </div>
-  `).join('');
-
-  // Ajouter les event listeners
-  document.querySelectorAll('.timeline-item').forEach(el => {
-    el.addEventListener('click', () => {
-      const interId = parseInt(el.dataset.interId);
-      openInteractionDetail(interId);
-    });
+  const phone = contact.numero_pro || contact.email_perso || '';
+  if (!phone) {
+    showToast('❌ Aucun numéro pour ce contact');
+    return;
+  }
+  
+  navigator.clipboard.writeText(phone).then(() => {
+    showToast(`📞 ${phone} (copié)`);
   });
+  
+  window.location.href = `tel:${phone}`;
+  
+  logInteractionDirect('Appel', contact.id, `Appel vers ${phone}`);
 }
 
-// ════════════════════════════════════════════════════════
-//  MODAL QUICK ACTION
-// ════════════════════════════════════════════════════════
-function openModal(type, opp) {
-  currentOpp        = opp;
-  currentActionType = type;
+function openEmailLink() {
+  if (!currentOpp) return;
+  
+  const contact = allContacts.find(c => c.id === currentOpp.contact_principale);
+  if (!contact) {
+    showToast('❌ Aucun contact assigné');
+    return;
+  }
 
-  const icons = { Appel:'📞', Email:'📧', Note:'📝', Réunion:'📅' };
-  document.getElementById('modal-title').textContent =
-    `${icons[type] || '📝'} ${type} — ${opp._entrepriseNom}`;
-  document.getElementById('modal-note').value = '';
-
-  const showDuree = ['Appel','Réunion'].includes(type);
-  document.getElementById('modal-duree-label').style.display = showDuree ? 'block' : 'none';
-  document.getElementById('modal-duree').style.display       = showDuree ? 'block' : 'none';
-  document.getElementById('modal-duree').value = type === 'Appel' ? 15 : 60;
-
-  document.getElementById('modal-overlay').classList.add('open');
+  const email = contact.Email_fonctionnel || contact.email_perso || '';
+  if (!email) {
+    showToast('❌ Aucun email pour ce contact');
+    return;
+  }
+  
+  const subject = `CRM PUI - ${currentOpp.titre || 'Opportunité'}`;
+  const body = `Bonjour,\n\nJe vous contacte concernant votre opportunité.\n\nCordialement`;
+  
+  const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailtoLink;
+  
+  logInteractionDirect('Email', contact.id, `Email envoyé à ${email}`);
 }
 
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
+function openAddContactModal() {
+  if (!currentOpp) return;
+  
+  const modal = document.getElementById('modal-overlay');
+  const modalTitle = document.getElementById('modal-title');
+  
+  modalTitle.textContent = '👥 Ajouter un contact à l\'opportunité';
+  
+  const selectHTML = `
+    <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; display: block; margin-bottom: 6px;">
+      Contact à ajouter *
+    </label>
+    <select id="add-contact-select" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; margin-bottom: 14px;">
+      <option value="">-- Sélectionner --</option>
+      ${allContacts.map(c => {
+        const nom = c.nom_prenom || `${c.Prenom || ''} ${c.Nom || ''}`.trim();
+        return `<option value="${c.id}">${nom}</option>`;
+      }).join('')}
+    </select>
+  `;
+  
+  const modalContent = document.querySelector('.modal');
+  modalContent.innerHTML = selectHTML;
+  
+  document.getElementById('modal-confirm').textContent = '✅ Ajouter';
+  document.getElementById('modal-confirm').onclick = async () => {
+    const contactId = document.getElementById('add-contact-select').value;
+    if (!contactId) {
+      showToast('❌ Veuillez sélectionner un contact');
+      return;
+    }
+    
+    await addContactToOpportunity(currentOpp.id, parseInt(contactId));
+    modal.classList.remove('open');
+  };
+  
+  document.getElementById('modal-cancel').textContent = '✕ Annuler';
+  document.getElementById('modal-cancel').onclick = () => {
+    modal.classList.remove('open');
+  };
+  
+  modal.classList.add('open');
 }
 
-async function confirmAction() {
-  const contenu = document.getElementById('modal-note').value.trim();
-  const duree   = parseInt(document.getElementById('modal-duree').value) || 0;
-  if (!contenu) { showToast('⚠️ Merci de saisir un contenu'); return; }
+async function addContactToOpportunity(oppId, contactId) {
+  try {
+    let opp = allOpportunites.find(o => o.id === oppId);
+    if (!opp) return;
+    
+    // Remplacer le contact principal pour l'instant
+    if (gristReady) {
+      await grist.docApi.applyUserActions([
+        ['UpdateRecord', 'Opportunites', oppId, {
+          'contact_principale': contactId
+        }]
+      ]);
+    }
+    
+    opp.contact_principale = contactId;
+    enrichOpps();
+    renderKanban();
+    renderPanelEdit(opp);
+    showToast('✅ Contact ajouté');
+  } catch (err) {
+    console.error('Erreur:', err);
+    showToast('❌ Erreur');
+  }
+}
 
+function logInteractionFromPanel() {
+  if (!currentOpp) {
+    showToast('❌ Aucune opportunité sélectionnée');
+    return;
+  }
+  
+  const type = document.getElementById('interaction-type').value;
+  const content = document.getElementById('interaction-content').value.trim();
+  
+  if (!content) {
+    showToast('⚠️ Veuillez remplir le contenu');
+    return;
+  }
+  
+  logInteractionDirect(type, currentOpp.contact_principale, content);
+  
+  document.getElementById('interaction-content').value = '';
+  renderTimeline(currentOpp);
+  showToast('✅ Interaction enregistrée');
+}
+
+async function logInteractionDirect(type, contactId, content) {
   const nowTs = Math.floor(Date.now() / 1000);
-
+  
   const interaction = {
     id              : Date.now(),
-    type_interaction: currentActionType,
+    type_interaction: type,
     Date            : nowTs,
-    contact         : currentOpp.contact_principale || 0,
-    Opportunite     : currentOpp.id,
-    Assigne         : currentOpp.assignee_a         || 0,
-    contenu,
-    duree,
-    _contactNom     : currentOpp._contactNom,
-    _assigneeNom    : currentOpp._assigneeNom,
+    contact         : contactId || 0,
+    Opportunite     : currentOpp?.id || 0,
+    Assigne         : currentOpp?.assignee_a || 0,
+    contenu         : content,
+    duree           : 0,
   };
 
   allInteractions.unshift(interaction);
@@ -529,24 +659,188 @@ async function confirmAction() {
   if (gristReady) {
     try {
       await grist.docApi.applyUserActions([['AddRecord', 'Interactions', null, {
-        type_interaction: currentActionType,
+        type_interaction: type,
         Date            : nowTs,
-        contact         : currentOpp.contact_principale || 0,
-        Opportunite     : currentOpp.id,
-        Assigne         : currentOpp.assignee_a         || 0,
-        contenu,
-        duree           : duree,
+        contact         : contactId || 0,
+        Opportunite     : currentOpp?.id || 0,
+        Assigne         : currentOpp?.assignee_a || 0,
+        contenu         : content,
+        duree           : 0,
       }]]);
     } catch(err) {
       console.error('Interaction non sauvegardée', err);
       showToast('❌ Erreur lors de l\'enregistrement');
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  MODAL DÉTAIL INTERACTION
+// ════════════════════════════════════════════════════════
+function openInteractionDetail(interactionId) {
+  const inter = allInteractions.find(i => i.id === interactionId);
+  if (!inter) return;
+
+  const dateVal = typeof inter.Date === 'number' 
+    ? new Date(inter.Date * 1000).toISOString().slice(0, 16)
+    : String(inter.Date).slice(0, 16);
+
+  const contactOptions = allContacts.map(c => {
+    const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
+    return `<option value="${c.id}" ${c.id == inter.contact ? 'selected' : ''}>${nom}</option>`;
+  }).join('');
+
+  const assigneeOptions = allContacts.map(c => {
+    const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
+    return `<option value="${c.id}" ${c.id == inter.Assigne ? 'selected' : ''}>${nom}</option>`;
+  }).join('');
+
+  const typeOptions = ['Appel', 'Email', 'Note', 'Réunion'].map(t =>
+    `<option value="${t}" ${t === inter.type_interaction ? 'selected' : ''}>${t}</option>`
+  ).join('');
+
+  const overlay = document.getElementById('inter-detail-overlay');
+  const modal = document.getElementById('inter-detail-modal');
+
+  modal.innerHTML = `
+    <div class="detail-header">
+      <h2>${INTERACTION_ICONS[inter.type_interaction] || '💬'} ${inter.type_interaction}</h2>
+      <button style="background: none; border: none; font-size: 1.5rem; cursor: pointer;" onclick="closeInteractionDetail()">✕</button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-item">
+        <span class="detail-label">Type</span>
+        <select class="detail-input" id="inter-edit-type">${typeOptions}</select>
+      </div>
+      
+      <div class="detail-item">
+        <span class="detail-label">Date & Heure</span>
+        <input type="datetime-local" class="detail-input" id="inter-edit-date" value="${dateVal}">
+      </div>
+      
+      <div class="detail-item">
+        <span class="detail-label">Contact</span>
+        <select class="detail-input" id="inter-edit-contact">${contactOptions}</select>
+      </div>
+      
+      <div class="detail-item">
+        <span class="detail-label">Assigné à</span>
+        <select class="detail-input" id="inter-edit-assignee">${assigneeOptions}</select>
+      </div>
+      
+      <div class="detail-item">
+        <span class="detail-label">Durée (min)</span>
+        <input type="number" class="detail-input" id="inter-edit-duree" value="${inter.duree || 0}">
+      </div>
+      
+      <div class="detail-item detail-full">
+        <span class="detail-label">Contenu</span>
+        <textarea class="detail-input detail-textarea" id="inter-edit-contenu">${escHtml(inter.contenu || '')}</textarea>
+      </div>
+      
+      <div class="detail-item detail-full detail-actions">
+        <button class="btn-save" id="btn-save-inter">💾 Enregistrer</button>
+        <button class="btn-secondary" id="btn-duplicate-inter">📋 Dupliquer</button>
+        <button class="btn-danger" id="btn-delete-inter">🗑️ Supprimer</button>
+        <button class="btn-cancel-edit" id="btn-cancel-inter">✕ Fermer</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('btn-save-inter').addEventListener('click', () => saveInteractionDetail(inter));
+  document.getElementById('btn-duplicate-inter').addEventListener('click', () => duplicateInteraction(inter));
+  document.getElementById('btn-delete-inter').addEventListener('click', () => deleteInteraction(inter.id));
+  document.getElementById('btn-cancel-inter').addEventListener('click', closeInteractionDetail);
+
+  overlay.classList.add('open');
+}
+
+function closeInteractionDetail() {
+  document.getElementById('inter-detail-overlay').classList.remove('open');
+}
+
+async function saveInteractionDetail(inter) {
+  const newType     = document.getElementById('inter-edit-type').value;
+  const newDate     = document.getElementById('inter-edit-date').value;
+  const newContact  = parseInt(document.getElementById('inter-edit-contact').value) || 0;
+  const newAssignee = parseInt(document.getElementById('inter-edit-assignee').value) || 0;
+  const newDuree    = parseInt(document.getElementById('inter-edit-duree').value)    || 0;
+  const newContenu  = document.getElementById('inter-edit-contenu').value.trim();
+
+  const newDateTs = Math.floor(new Date(newDate).getTime() / 1000);
+
+  const fields = {
+    type_interaction: newType,
+    Date            : newDateTs,
+    contact         : newContact,
+    Assigne         : newAssignee,
+    duree           : newDuree,
+    contenu         : newContenu,
+  };
+
+  if (gristReady) {
+    try {
+      await grist.docApi.applyUserActions([
+        ['UpdateRecord', 'Interactions', inter.id, fields]
+      ]);
+      showToast('✅ Interaction mise à jour !');
+    } catch(err) {
+      console.error(err);
+      showToast('❌ Erreur lors de la mise à jour');
+      return;
+    }
+  }
+
+  Object.assign(inter, fields);
+  if (currentOpp) renderTimeline(currentOpp);
+  closeInteractionDetail();
+}
+
+async function duplicateInteraction(inter) {
+  const nowTs = Math.floor(Date.now() / 1000);
+
+  if (gristReady) {
+    try {
+      await grist.docApi.applyUserActions([['AddRecord', 'Interactions', null, {
+        type_interaction: inter.type_interaction,
+        Date            : nowTs,
+        contact         : inter.contact,
+        Opportunite     : inter.Opportunite,
+        Assigne         : inter.Assigne,
+        contenu         : inter.contenu + ' [COPIE]',
+        duree           : inter.duree,
+      }]]);
+      showToast('✅ Interaction dupliquée !');
+    } catch(err) {
+      console.error(err);
+      showToast('❌ Erreur lors de la duplication');
       return;
     }
   }
 
   if (currentOpp) renderTimeline(currentOpp);
-  closeModal();
-  showToast(`✅ ${currentActionType} enregistré·e !`);
+  closeInteractionDetail();
+}
+
+async function deleteInteraction(interactionId) {
+  if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette interaction ?')) return;
+
+  if (gristReady) {
+    try {
+      await grist.docApi.applyUserActions([
+        ['RemoveRecord', 'Interactions', interactionId]
+      ]);
+      showToast('✅ Interaction supprimée !');
+    } catch(err) {
+      console.error(err);
+      showToast('❌ Erreur lors de la suppression');
+      return;
+    }
+  }
+
+  allInteractions = allInteractions.filter(i => i.id !== interactionId);
+  if (currentOpp) renderTimeline(currentOpp);
+  closeInteractionDetail();
 }
 
 // ════════════════════════════════════════════════════════
@@ -585,20 +879,16 @@ document.querySelectorAll('.add-card-btn').forEach(btn => {
   btn.addEventListener('click', () => showToast('🚧 Ajout rapide — bientôt disponible !'));
 });
 
-document.querySelectorAll('.quick-action').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (!currentOpp) return;
-    openModal(btn.dataset.type, currentOpp);
-  });
-});
-
 document.getElementById('close-panel').addEventListener('click', closePanel);
 document.getElementById('overlay').addEventListener('click', closePanel);
 
-document.getElementById('modal-cancel').addEventListener('click',  closeModal);
-document.getElementById('modal-confirm').addEventListener('click', confirmAction);
+document.getElementById('modal-cancel').addEventListener('click',  () => {
+  document.getElementById('modal-overlay').classList.remove('open');
+});
 document.getElementById('modal-overlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('modal-overlay')) closeModal();
+  if (e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
 });
 
 // ════════════════════════════════════════════════════════
@@ -660,309 +950,3 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
-// ════════════════════════════════════════════════════════
-//  MODAL DÉTAIL INTERACTION
-// ════════════════════════════════════════════════════════
-function openInteractionDetail(interactionId) {
-  const inter = allInteractions.find(i => i.id === interactionId);
-  if (!inter) return;
-
-  const inter_enriched = resolveInteractionNames({...inter});
-  
-  const dateVal = typeof inter.Date === 'number' 
-    ? new Date(inter.Date * 1000).toISOString().slice(0, 16)
-    : String(inter.Date).slice(0, 16);
-
-  const contactOptions = allContacts.map(c => {
-    const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
-    return `<option value="${c.id}" ${c.id == inter.contact ? 'selected' : ''}>${nom}</option>`;
-  }).join('');
-
-  const assigneeOptions = allContacts.map(c => {
-    const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
-    return `<option value="${c.id}" ${c.id == inter.Assigne ? 'selected' : ''}>${nom}</option>`;
-  }).join('');
-
-  const typeOptions = ['Appel', 'Email', 'Note', 'Réunion'].map(t =>
-    `<option value="${t}" ${t === inter.type_interaction ? 'selected' : ''}>${t}</option>`
-  ).join('');
-
-  document.getElementById('inter-detail-modal').innerHTML = `
-    <div class="inter-detail-content">
-      <div class="inter-detail-header">
-        <h3>${INTERACTION_ICONS[inter.type_interaction] || '💬'} ${inter.type_interaction}</h3>
-        <button class="btn-close-inter" onclick="closeInteractionDetail()">✕</button>
-      </div>
-      
-      <div class="inter-detail-form">
-        <div class="detail-item">
-          <span class="detail-label">Type</span>
-          <select class="detail-input" id="inter-edit-type">
-            ${typeOptions}
-          </select>
-        </div>
-        
-        <div class="detail-item">
-          <span class="detail-label">Date & Heure</span>
-          <input class="detail-input" type="datetime-local" id="inter-edit-date" value="${dateVal}">
-        </div>
-        
-        <div class="detail-item">
-          <span class="detail-label">Contact</span>
-          <select class="detail-input" id="inter-edit-contact">
-            ${contactOptions}
-          </select>
-        </div>
-        
-        <div class="detail-item">
-          <span class="detail-label">Assigné à</span>
-          <select class="detail-input" id="inter-edit-assignee">
-            ${assigneeOptions}
-          </select>
-        </div>
-        
-        <div class="detail-item">
-          <span class="detail-label">Durée (min)</span>
-          <input class="detail-input" type="number" id="inter-edit-duree" value="${inter.duree || 0}">
-        </div>
-        
-        <div class="detail-item detail-full">
-          <span class="detail-label">Contenu</span>
-          <textarea class="detail-input detail-textarea" id="inter-edit-contenu">${escHtml(inter.contenu || '')}</textarea>
-        </div>
-        
-        <div class="detail-item detail-full detail-actions">
-          <button class="btn-save" id="btn-save-inter">💾 Enregistrer</button>
-          <button class="btn-secondary" id="btn-duplicate-inter">📋 Dupliquer</button>
-          <button class="btn-danger" id="btn-delete-inter">🗑️ Supprimer</button>
-          <button class="btn-cancel-edit" id="btn-cancel-inter">✕ Fermer</button>
-        </div>
-      </div>
-    </div>
-  `;
-
-  document.getElementById('btn-save-inter').addEventListener('click', () => saveInteraction(inter));
-  document.getElementById('btn-duplicate-inter').addEventListener('click', () => duplicateInteraction(inter));
-  document.getElementById('btn-delete-inter').addEventListener('click', () => deleteInteraction(inter.id));
-  document.getElementById('btn-cancel-inter').addEventListener('click', closeInteractionDetail);
-
-  document.getElementById('inter-detail-overlay').classList.add('open');
-}
-
-function closeInteractionDetail() {
-  document.getElementById('inter-detail-overlay').classList.remove('open');
-}
-
-async function saveInteraction(inter) {
-  const newType      = document.getElementById('inter-edit-type').value;
-  const newDateStr   = document.getElementById('inter-edit-date').value;
-  const newContact   = parseInt(document.getElementById('inter-edit-contact').value) || 0;
-  const newAssignee  = parseInt(document.getElementById('inter-edit-assignee').value) || 0;
-  const newDuree     = parseInt(document.getElementById('inter-edit-duree').value) || 0;
-  const newContenu   = document.getElementById('inter-edit-contenu').value.trim();
-
-  if (!newContenu) {
-    showToast('⚠️ Merci de saisir un contenu');
-    return;
-  }
-
-  const newDateTs = newDateStr
-    ? Math.floor(new Date(newDateStr).getTime() / 1000)
-    : inter.Date;
-
-  const fields = {
-    type_interaction: newType,
-    Date            : newDateTs,
-    contact         : newContact,
-    Assigne         : newAssignee,
-    duree           : newDuree,
-    contenu         : newContenu,
-  };
-
-  if (gristReady) {
-    try {
-      await grist.docApi.applyUserActions([
-        ['UpdateRecord', 'Interactions', inter.id, fields]
-      ]);
-      showToast('✅ Interaction mise à jour !');
-    } catch(err) {
-      console.error(err);
-      showToast('❌ Erreur lors de la mise à jour');
-      return;
-    }
-  } else {
-    showToast('✅ Interaction mise à jour (démo)');
-  }
-
-  // Mise à jour locale
-  Object.assign(inter, fields);
-  if (currentOpp) renderTimeline(currentOpp);
-  closeInteractionDetail();
-}
-
-async function duplicateInteraction(inter) {
-  const nowTs = Math.floor(Date.now() / 1000);
-
-  if (gristReady) {
-    try {
-      await grist.docApi.applyUserActions([['AddRecord', 'Interactions', null, {
-        type_interaction: inter.type_interaction,
-        Date            : nowTs,
-        contact         : inter.contact,
-        Opportunite     : inter.Opportunite,
-        Assigne         : inter.Assigne,
-        contenu         : inter.contenu + ' [COPIE]',
-        duree           : inter.duree,
-      }]]);
-      showToast('✅ Interaction dupliquée !');
-    } catch(err) {
-      console.error(err);
-      showToast('❌ Erreur lors de la duplication');
-      return;
-    }
-  } else {
-    showToast('✅ Interaction dupliquée (démo)');
-  }
-
-  if (currentOpp) renderTimeline(currentOpp);
-  closeInteractionDetail();
-}
-
-async function deleteInteraction(interactionId) {
-  if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette interaction ?')) return;
-
-  if (gristReady) {
-    try {
-      await grist.docApi.applyUserActions([
-        ['RemoveRecord', 'Interactions', interactionId]
-      ]);
-      showToast('✅ Interaction supprimée !');
-    } catch(err) {
-      console.error(err);
-      showToast('❌ Erreur lors de la suppression');
-      return;
-    }
-  } else {
-    showToast('✅ Interaction supprimée (démo)');
-  }
-
-  allInteractions = allInteractions.filter(i => i.id !== interactionId);
-  if (currentOpp) renderTimeline(currentOpp);
-  closeInteractionDetail();
-}
-// ════════════════════════════════════════════════════════
-//  ACTIONS RAPIDES AMÉLIORÉES
-// ════════════════════════════════════════════════════════
-
-function callContact() {
-  if (!currentOpp) return;
-  
-  const contact = allContacts.find(c => c.id === currentOpp.contact);
-  if (!contact || !contact.Telephone) {
-    showToast('❌ Aucun numéro pour ce contact');
-    return;
-  }
-  
-  navigator.clipboard.writeText(contact.Telephone).then(() => {
-    showToast(`📞 Numéro copié: ${contact.Telephone}`);
-  });
-  
-  const telLink = `tel:${contact.Telephone}`;
-  window.location.href = telLink;
-  
-  logInteraction('Appel', contact.id, `Appel vers ${contact.Telephone}`);
-}
-
-function sendEmail() {
-  if (!currentOpp) return;
-  
-  const contact = allContacts.find(c => c.id === currentOpp.contact);
-  if (!contact || !contact.Email) {
-    showToast('❌ Aucun email pour ce contact');
-    return;
-  }
-  
-  const subject = `CRM PUI - ${currentOpp.Titre || 'Opportunité'}`;
-  const body = `Bonjour,\n\nJe vous contacte concernant votre opportunité.\n\nCordialement,\n[Votre nom]`;
-  
-  const mailtoLink = `mailto:${contact.Email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = mailtoLink;
-  
-  logInteraction('Email', contact.id, `Email envoyé à ${contact.Email}`);
-}
-
-function openAddContactToOpp() {
-  if (!currentOpp) return;
-  
-  const modal = document.getElementById('modal-overlay');
-  const modalTitle = document.getElementById('modal-title');
-  const modalNote = document.getElementById('modal-note');
-  
-  modalTitle.textContent = '👥 Ajouter un contact';
-  
-  // Vider le modal
-  const oldSelect = document.getElementById('select-contact');
-  if (oldSelect) oldSelect.parentElement.parentElement.remove();
-  
-  const html = `
-    <div style="margin-bottom: 16px;">
-      <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; display: block; margin-bottom: 8px;">
-        Sélectionner un contact
-      </label>
-      <select id="select-contact" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit;">
-        <option value="">-- Choisir un contact --</option>
-        ${allContacts.map(c => {
-          const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
-          return `<option value="${c.id}">${nom}</option>`;
-        }).join('')}
-      </select>
-    </div>
-  `;
-  
-  const container = document.createElement('div');
-  container.innerHTML = html;
-  modalNote.parentElement.parentElement.insertBefore(container, modalNote.parentElement);
-  modalNote.parentElement.style.display = 'none';
-  
-  document.getElementById('modal-confirm').textContent = '✅ Ajouter le contact';
-  document.getElementById('modal-confirm').onclick = () => {
-    const contactId = document.getElementById('select-contact').value;
-    if (!contactId) {
-      showToast('❌ Veuillez sélectionner un contact');
-      return;
-    }
-    
-    addContactToOpportunity(currentOpp.id, contactId);
-  };
-  
-  modal.classList.add('open');
-}
-
-async function addContactToOpportunity(oppId, contactId) {
-  try {
-    const opp = allOpportunites.find(o => o.id === oppId);
-    if (!opp) return;
-    
-    let contacts = opp.contacts_lies || [];
-    if (typeof contacts === 'string') contacts = contacts.split(',').map(c => c.trim());
-    
-    if (!contacts.includes(contactId)) {
-      contacts.push(contactId);
-    }
-    
-    await grist.docApi.applyUserActions([
-      ['UpdateRecord', 'Opportunites', oppId, {
-        'contacts_lies': contacts.join(', ')
-      }]
-    ]);
-    
-    showToast('✅ Contact ajouté');
-    refreshPanel();
-    document.getElementById('modal-overlay').classList.remove('open');
-  } catch (err) {
-    console.error('Erreur:', err);
-    showToast('❌ Erreur');
-  }
-}
-
-
