@@ -1,7 +1,7 @@
 // ════════════════════════════════════════════════════════
 //  CRM PUI — Université de Bordeaux
 //  Widget Grist — JS principal
-//  Version 0.2 — Juin 2026
+//  Version 0.3 — Juin 2026
 // ════════════════════════════════════════════════════════
 
 // ── État global ──────────────────────────────────────────
@@ -14,43 +14,26 @@ let currentActionType   = null;
 let gristReady          = false;
 let draggedCardId       = null;
 
-// ── Données de démo ───────────────────────────────────────
-const DEMO_OPPS = [
-  { id:1, titre:'Partenariat R&D',       _entrepriseNom:'Nova Tech SAS',      _contactNom:'Marie Dupont',   statut:'Prospect',      Priorite:'Haute',   valeur_estilmee:12000, date_closing_estimee:'2026-09-01', _assigneeNom:'Jean BD',    description:'Collaboration sur projet IA.' },
-  { id:2, titre:'Formation innovation',  _entrepriseNom:'Innovate Solutions',  _contactNom:'Thomas Leroy',   statut:'Prospect',      Priorite:'Moyenne', valeur_estilmee:5500,  date_closing_estimee:'2026-08-15', _assigneeNom:'Claire CHAF',description:'Programme 6 mois.' },
-  { id:3, titre:'Licence technologique', _entrepriseNom:'Groupe Leclerc',      _contactNom:'Pierre Moreau',  statut:'En discussion', Priorite:'Haute',   valeur_estilmee:18000, date_closing_estimee:'2026-07-30', _assigneeNom:'Jean BD',    description:'Transfert de licence brevet.' },
-  { id:4, titre:'Accompagnement startup',_entrepriseNom:'StartX',              _contactNom:'Lucie Bernard',  statut:'En discussion', Priorite:'Moyenne', valeur_estilmee:8000,  date_closing_estimee:'2026-08-01', _assigneeNom:'Claire CHAF',description:'Suivi incubation 12 mois.' },
-  { id:5, titre:'Contrat de recherche',  _entrepriseNom:'BioLab Corp',         _contactNom:'Sophie Martin',  statut:'Proposition',   Priorite:'Haute',   valeur_estilmee:35000, date_closing_estimee:'2026-07-15', _assigneeNom:'Jean BD',    description:'Contrat pluriannuel.' },
-  { id:6, titre:'Prestation conseil',    _entrepriseNom:'EcoGreen SARL',       _contactNom:'Nicolas Petit',  statut:'Proposition',   Priorite:'Basse',   valeur_estilmee:7000,  date_closing_estimee:'2026-09-30', _assigneeNom:'Claire CHAF',description:'Conseil transition écologique.' },
-  { id:7, titre:'Transfert technologique',_entrepriseNom:'Finance & Co',       _contactNom:'Laurent Blanc',  statut:'Gagné',         Priorite:'Haute',   valeur_estilmee:25000, date_closing_estimee:'2026-06-01', _assigneeNom:'Jean BD',    description:'Transfert finalisé.' },
-  { id:8, titre:'Formation continue',    _entrepriseNom:'Boulangerie Durand',  _contactNom:'Marie Leblanc',  statut:'Gagné',         Priorite:'Moyenne', valeur_estilmee:4200,  date_closing_estimee:'2026-05-30', _assigneeNom:'Claire CHAF',description:'Formation managers.' },
-  { id:9, titre:'Expertise technique',   _entrepriseNom:'Architex Construct',  _contactNom:'Frédéric Müller',statut:'Perdu',         Priorite:'Basse',   valeur_estilmee:8500,  date_closing_estimee:'2026-04-01', _assigneeNom:'Jean BD',    description:'Budget non validé.' },
-];
-
-const DEMO_INTERACTIONS = [
-  { id:1, type_interaction:'Appel',  Date:'2026-06-17T14:30:00', _contactNom:'Pierre Moreau', Opportunite:3, _assigneeNom:'Jean BD',    contenu:'Appel de suivi, client positif.', duree:15 },
-  { id:2, type_interaction:'Email',  Date:'2026-06-16T10:15:00', _contactNom:'Pierre Moreau', Opportunite:3, _assigneeNom:'Jean BD',    contenu:'Envoi du devis détaillé V2.',     duree:0  },
-  { id:3, type_interaction:'Note',   Date:'2026-06-14T09:00:00', _contactNom:'Pierre Moreau', Opportunite:3, _assigneeNom:'Jean BD',    contenu:'Client intéressé par option premium.', duree:0 },
-];
-
 const INTERACTION_ICONS = { Appel:'📞', Email:'📧', Note:'📝', Réunion:'📅' };
 const STATUTS = ['Prospect','En discussion','Proposition','Gagné','Perdu'];
 
-// ── Init Grist ────────────────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  INIT GRIST
+// ════════════════════════════════════════════════════════
 grist.ready({ requiredAccess: 'full', allowSelectBy: true });
 
 // Chargement table Annuaire
 grist.docApi.fetchTable('Annuaire').then(data => {
   allContacts = data.id.map((id, i) => ({
     id,
-    nom_prenom : data.nom_prenom?.[i] || '',
-    Nom        : data.Nom?.[i]        || '',
-    Prenom     : data.Prenom?.[i]     || '',
-    email_perso: data.email_perso?.[i]|| '',
-    Email_fonctionnel: data.Email_fonctionnel?.[i] || '',
-    numero_pro : data.numero_pro?.[i] || '',
-    Poste      : data.Poste?.[i]      || '',
-    Structure  : data.Structure?.[i]  || 0,
+    nom_prenom        : data.nom_prenom?.[i]         || '',
+    Nom               : data.Nom?.[i]                || '',
+    Prenom            : data.Prenom?.[i]             || '',
+    email_perso       : data.email_perso?.[i]        || '',
+    Email_fonctionnel : data.Email_fonctionnel?.[i]  || '',
+    numero_pro        : data.numero_pro?.[i]         || '',
+    Poste             : data.Poste?.[i]              || '',
+    Structure         : data.Structure?.[i]          || 0,
   }));
 }).catch(e => console.warn('Annuaire non chargé', e));
 
@@ -58,11 +41,11 @@ grist.docApi.fetchTable('Annuaire').then(data => {
 grist.docApi.fetchTable('Entreprise').then(data => {
   allEntreprises = data.id.map((id, i) => ({
     id,
-    Nom    : data.Nom?.[i]     || '',
-    Secteur: data.Secteur?.[i] || '',
-    taille : data.taille?.[i]  || '',
+    Nom     : data.Nom?.[i]      || '',
+    Secteur : data.Secteur?.[i]  || '',
+    taille  : data.taille?.[i]   || '',
     site_web_: data.site_web_?.[i] || '',
-    Ville  : data.Ville?.[i]   || 0,
+    Ville   : data.Ville?.[i]    || '',
   }));
 }).catch(e => console.warn('Entreprise non chargé', e));
 
@@ -70,13 +53,13 @@ grist.docApi.fetchTable('Entreprise').then(data => {
 grist.docApi.fetchTable('Interactions').then(data => {
   allInteractions = data.id.map((id, i) => ({
     id,
-    type_interaction: data.type_interaction?.[i] || '',
-    Date     : data.Date?.[i]      || '',
-    contact  : data.contact?.[i]   || 0,
-    Opportunite: data.Opportunite?.[i] || 0,
-    Assigne  : data.Assigne?.[i]   || 0,
-    contenu  : data.contenu?.[i]   || '',
-    duree    : data.duree?.[i]     || 0,
+    type_interaction : data.type_interaction?.[i] || '',
+    Date             : data.Date?.[i]             || '',
+    contact          : data.contact?.[i]          || 0,
+    Opportunite      : data.Opportunite?.[i]      || 0,
+    Assigne          : data.Assigne?.[i]          || 0,
+    contenu          : data.contenu?.[i]          || '',
+    duree            : data.duree?.[i]            || 0,
   }));
 }).catch(e => console.warn('Interactions non chargé', e));
 
@@ -88,39 +71,35 @@ grist.onRecords(records => {
     enrichOpps();
     renderKanban();
   } else {
-    // Mode démo
-    allOpportunites = DEMO_OPPS;
-    allInteractions = DEMO_INTERACTIONS;
     renderKanban();
   }
 });
 
-// ── Normalisation champs Grist → noms internes ───────────
+// ════════════════════════════════════════════════════════
+//  NORMALISATION & ENRICHISSEMENT
+// ════════════════════════════════════════════════════════
 function normalizeOpp(r) {
   return {
-    id                 : r.id,
-    titre              : r.titre              || '(Sans titre)',
-    statut             : r.statut             || 'Prospect',
-    Priorite           : r.Priorite           || 'Moyenne',
-    valeur_estilmee    : r.valeur_estilmee    || 0,
-    date_closing_estimee: r.date_closing_estimee || '',
-    description        : r.description        || '',
-    // References (IDs)
-    Entreprise         : r.Entreprise         || 0,
-    contact_principale : r.contact_principale || 0,
-    assignee_a         : r.assignee_a         || 0,
-    // Noms résolus (remplis par enrichOpps)
-    _entrepriseNom     : '',
-    _contactNom        : '',
-    _assigneeNom       : '',
+    id                  : r.id,
+    titre               : r.titre               || '(Sans titre)',
+    statut              : r.statut              || 'Prospect',
+    Priorite            : r.Priorite            || 'Moyenne',
+    valeur_estilmee     : r.valeur_estilmee     || 0,
+    date_closing_estimee: r.date_closing_estimee|| '',
+    description         : r.description         || '',
+    Entreprise          : r.Entreprise          || 0,
+    contact_principale  : r.contact_principale  || 0,
+    assignee_a          : r.assignee_a          || 0,
+    _entrepriseNom      : '',
+    _contactNom         : '',
+    _assigneeNom        : '',
   };
 }
 
-// ── Résolution des References ─────────────────────────────
 function enrichOpps() {
   allOpportunites.forEach(opp => {
     const ent = allEntreprises.find(e => e.id === opp.Entreprise);
-    opp._entrepriseNom = ent ? ent.Nom : '(Entreprise #' + opp.Entreprise + ')';
+    opp._entrepriseNom = ent ? ent.Nom : (opp.Entreprise ? '(Entreprise #' + opp.Entreprise + ')' : '—');
 
     const contact = allContacts.find(c => c.id === opp.contact_principale);
     opp._contactNom = contact
@@ -148,7 +127,9 @@ function resolveInteractionNames(inter) {
   return inter;
 }
 
-// ── Rendu Kanban ──────────────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  KANBAN
+// ════════════════════════════════════════════════════════
 function renderKanban() {
   STATUTS.forEach(statut => {
     const cards     = allOpportunites.filter(o => o.statut === statut);
@@ -169,7 +150,6 @@ function renderKanban() {
   initDragDrop();
 }
 
-// ── Création carte ────────────────────────────────────────
 function createCard(opp) {
   const card = document.createElement('div');
   card.className  = 'opportunity-card';
@@ -200,7 +180,7 @@ function createCard(opp) {
   `;
 
   card.addEventListener('click', e => {
-    if (!e.target.closest('.card-action')) openPanel(opp);
+    if (!e.target.closest('.card-action')) openPanelEdit(opp);
   });
 
   card.querySelectorAll('.card-action').forEach(btn => {
@@ -213,7 +193,9 @@ function createCard(opp) {
   return card;
 }
 
-// ── Drag & Drop ───────────────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  DRAG & DROP
+// ════════════════════════════════════════════════════════
 function initDragDrop() {
   document.querySelectorAll('.opportunity-card').forEach(card => {
     card.addEventListener('dragstart', e => {
@@ -253,77 +235,36 @@ function initDragDrop() {
           showToast('❌ Erreur lors de la mise à jour');
         }
       } else {
-        showToast(`✅ Déplacé vers "${newStatut}" (démo)`);
+        showToast(`✅ Déplacé vers "${newStatut}"`);
       }
     });
   });
 }
 
-// ── Side Panel ────────────────────────────────────────────
-function openPanel(opp) {
+// ════════════════════════════════════════════════════════
+//  SIDE PANEL
+// ════════════════════════════════════════════════════════
+function openPanelEdit(opp) {
   currentOpp = opp;
 
-  document.getElementById('panel-company').textContent  = opp._entrepriseNom;
-  document.getElementById('panel-contact').textContent  = '👤 ' + opp._contactNom;
+  document.getElementById('panel-company').textContent = opp._entrepriseNom;
+  document.getElementById('panel-contact').textContent = '👤 ' + opp._contactNom;
 
   const statusEl = document.getElementById('panel-status');
-  statusEl.textContent       = opp.statut;
-  statusEl.style.background  = statusBg(opp.statut);
-  statusEl.style.color       = statusColor(opp.statut);
+  statusEl.textContent      = opp.statut;
+  statusEl.style.background = statusBg(opp.statut);
+  statusEl.style.color      = statusColor(opp.statut);
 
   document.getElementById('panel-amount').textContent = formatEuros(opp.valeur_estilmee);
 
-  renderPanelDetails(opp);
+  renderPanelEdit(opp);
   renderTimeline(opp);
 
   document.getElementById('side-panel').classList.add('open');
   document.getElementById('overlay').classList.add('visible');
 }
 
-function renderPanelDetails(opp) {
-  // Mode lecture par défaut
-  document.getElementById('panel-details').innerHTML = `
-    <div class="detail-item">
-      <span class="detail-label">Titre</span>
-      <span class="detail-value" id="dv-titre">${opp.titre}</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Entreprise</span>
-      <span class="detail-value" id="dv-entreprise">${opp._entrepriseNom}</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Contact principal</span>
-      <span class="detail-value" id="dv-contact">${opp._contactNom}</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Statut</span>
-      <span class="detail-value" id="dv-statut">${opp.statut}</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Priorité</span>
-      <span class="detail-value" id="dv-priorite">${opp.Priorite}</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Valeur estimée</span>
-      <span class="detail-value" id="dv-valeur">${formatEuros(opp.valeur_estilmee)}</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Closing estimé</span>
-      <span class="detail-value" id="dv-closing">${formatDate(opp.date_closing_estimee)}</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Assigné à</span>
-      <span class="detail-value" id="dv-assignee">${opp._assigneeNom}</span>
-    </div>
-    <div class="detail-item detail-full">
-      <span class="detail-label">Description</span>
-      <span class="detail-value" id="dv-description">${opp.description || '—'}</span>
-    </div>
-  `;
-}
-
 function renderPanelEdit(opp) {
-  // Listes pour les selects
   const statutOptions = STATUTS.map(s =>
     `<option value="${s}" ${s === opp.statut ? 'selected' : ''}>${s}</option>`
   ).join('');
@@ -346,7 +287,6 @@ function renderPanelEdit(opp) {
     return `<option value="${c.id}" ${c.id === opp.assignee_a ? 'selected' : ''}>${nom}</option>`;
   }).join('');
 
-  // Date ISO → input[type=date]
   const closingVal = opp.date_closing_estimee
     ? (typeof opp.date_closing_estimee === 'number'
         ? new Date(opp.date_closing_estimee * 1000).toISOString().slice(0,10)
@@ -404,13 +344,13 @@ function renderPanelEdit(opp) {
       <textarea class="detail-input detail-textarea" id="edit-description">${escHtml(opp.description || '')}</textarea>
     </div>
     <div class="detail-item detail-full detail-actions">
-      <button class="btn-save"   id="btn-save-fiche">💾 Enregistrer</button>
-      <button class="btn-cancel-edit" id="btn-cancel-edit">Annuler</button>
+      <button class="btn-save" id="btn-save-fiche">💾 Enregistrer</button>
+      <button class="btn-cancel-edit" id="btn-cancel-edit">✕ Fermer</button>
     </div>
   `;
 
-  document.getElementById('btn-save-fiche').addEventListener('click', () => saveFiche(opp));
-  document.getElementById('btn-cancel-edit').addEventListener('click', () => renderPanelDetails(opp));
+  document.getElementById('btn-save-fiche').addEventListener('click',   () => saveFiche(opp));
+  document.getElementById('btn-cancel-edit').addEventListener('click',  () => closePanel());
 }
 
 async function saveFiche(opp) {
@@ -420,11 +360,10 @@ async function saveFiche(opp) {
   const newStatut     = document.getElementById('edit-statut').value;
   const newPriorite   = document.getElementById('edit-priorite').value;
   const newValeur     = parseFloat(document.getElementById('edit-valeur').value)   || 0;
-  const newClosing    = document.getElementById('edit-closing').value; // 'YYYY-MM-DD'
+  const newClosing    = document.getElementById('edit-closing').value;
   const newAssignee   = parseInt(document.getElementById('edit-assignee').value)   || 0;
   const newDesc       = document.getElementById('edit-description').value.trim();
 
-  // Conversion date → timestamp (Grist Date = secondes depuis epoch)
   const closingTs = newClosing
     ? Math.floor(new Date(newClosing).getTime() / 1000)
     : null;
@@ -457,25 +396,25 @@ async function saveFiche(opp) {
   }
 
   // Mise à jour locale
-  opp.titre               = newTitre;
-  opp.Entreprise          = newEntreprise;
-  opp.contact_principale  = newContact;
-  opp.statut              = newStatut;
-  opp.Priorite            = newPriorite;
-  opp.valeur_estilmee     = newValeur;
+  opp.titre                = newTitre;
+  opp.Entreprise           = newEntreprise;
+  opp.contact_principale   = newContact;
+  opp.statut               = newStatut;
+  opp.Priorite             = newPriorite;
+  opp.valeur_estilmee      = newValeur;
   opp.date_closing_estimee = newClosing;
-  opp.assignee_a          = newAssignee;
-  opp.description         = newDesc;
+  opp.assignee_a           = newAssignee;
+  opp.description          = newDesc;
 
   // Re-enrichir noms
   const ent = allEntreprises.find(e => e.id === newEntreprise);
   opp._entrepriseNom = ent ? ent.Nom : '—';
   const ct = allContacts.find(c => c.id === newContact);
-  opp._contactNom = ct ? (ct.nom_prenom || (ct.Prenom+' '+ct.Nom).trim()) : '—';
+  opp._contactNom = ct ? (ct.nom_prenom || (ct.Prenom + ' ' + ct.Nom).trim()) : '—';
   const ag = allContacts.find(c => c.id === newAssignee);
-  opp._assigneeNom = ag ? (ag.nom_prenom || (ag.Prenom+' '+ag.Nom).trim()) : '—';
+  opp._assigneeNom = ag ? (ag.nom_prenom || (ag.Prenom + ' ' + ag.Nom).trim()) : '—';
 
-  // Rafraîchir UI
+  // Rafraîchir header du panel
   document.getElementById('panel-company').textContent = opp._entrepriseNom;
   document.getElementById('panel-contact').textContent = '👤 ' + opp._contactNom;
   const statusEl = document.getElementById('panel-status');
@@ -484,7 +423,7 @@ async function saveFiche(opp) {
   statusEl.style.color      = statusColor(opp.statut);
   document.getElementById('panel-amount').textContent = formatEuros(opp.valeur_estilmee);
 
-  renderPanelDetails(opp);
+  renderPanelEdit(opp);
   renderKanban();
 }
 
@@ -494,13 +433,19 @@ function closePanel() {
   currentOpp = null;
 }
 
-// ── Timeline interactions ─────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  TIMELINE INTERACTIONS
+// ════════════════════════════════════════════════════════
 function renderTimeline(opp) {
   const timeline = document.getElementById('panel-timeline');
   const items = allInteractions
     .filter(i => i.Opportunite === opp.id)
     .map(i => resolveInteractionNames({...i}))
-    .sort((a, b) => new Date(b.Date) - new Date(a.Date));
+    .sort((a, b) => {
+      const da = typeof a.Date === 'number' ? a.Date : new Date(a.Date).getTime() / 1000;
+      const db = typeof b.Date === 'number' ? b.Date : new Date(b.Date).getTime() / 1000;
+      return db - da;
+    });
 
   if (items.length === 0) {
     timeline.innerHTML = '<div class="timeline-empty">Aucune interaction enregistrée</div>';
@@ -517,15 +462,18 @@ function renderTimeline(opp) {
         </div>
         <div class="timeline-body">${item.contenu}</div>
         <div class="timeline-date">
-          ${formatDatetime(item.Date)} · ${item._assigneeNom}
-          ${item._contactNom !== '—' ? ' · ' + item._contactNom : ''}
+          ${formatDatetime(item.Date)}
+          ${item._assigneeNom !== '—' ? ' · ' + item._assigneeNom : ''}
+          ${item._contactNom  !== '—' ? ' · ' + item._contactNom  : ''}
         </div>
       </div>
     </div>
   `).join('');
 }
 
-// ── Modal Quick Action ────────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  MODAL QUICK ACTION
+// ════════════════════════════════════════════════════════
 function openModal(type, opp) {
   currentOpp        = opp;
   currentActionType = type;
@@ -552,16 +500,15 @@ async function confirmAction() {
   const duree   = parseInt(document.getElementById('modal-duree').value) || 0;
   if (!contenu) { showToast('⚠️ Merci de saisir un contenu'); return; }
 
-  const nowIso = new Date().toISOString();
-  const nowTs  = Math.floor(Date.now() / 1000); // pour Grist Date
+  const nowTs = Math.floor(Date.now() / 1000);
 
   const interaction = {
     id              : Date.now(),
     type_interaction: currentActionType,
-    Date            : nowIso,
-    contact         : currentOpp.contact_principale,
+    Date            : nowTs,
+    contact         : currentOpp.contact_principale || 0,
     Opportunite     : currentOpp.id,
-    Assigne         : currentOpp.assignee_a,
+    Assigne         : currentOpp.assignee_a         || 0,
     contenu,
     duree,
     _contactNom     : currentOpp._contactNom,
@@ -579,9 +526,13 @@ async function confirmAction() {
         Opportunite     : currentOpp.id,
         Assigne         : currentOpp.assignee_a         || 0,
         contenu,
-        duree           : String(duree),
+        duree           : duree,
       }]]);
-    } catch(err) { console.error('Interaction non sauvegardée', err); }
+    } catch(err) {
+      console.error('Interaction non sauvegardée', err);
+      showToast('❌ Erreur lors de l\'enregistrement');
+      return;
+    }
   }
 
   if (currentOpp) renderTimeline(currentOpp);
@@ -589,7 +540,9 @@ async function confirmAction() {
   showToast(`✅ ${currentActionType} enregistré·e !`);
 }
 
-// ── Navigation ────────────────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  NAVIGATION ONGLETS
+// ════════════════════════════════════════════════════════
 document.querySelectorAll('.nav-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -605,7 +558,9 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
   });
 });
 
-// ── Recherche ─────────────────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  ÉVÉNEMENTS UI
+// ════════════════════════════════════════════════════════
 document.getElementById('search-input').addEventListener('input', function() {
   const q = this.value.toLowerCase().trim();
   document.querySelectorAll('.opportunity-card').forEach(card => {
@@ -613,17 +568,14 @@ document.getElementById('search-input').addEventListener('input', function() {
   });
 });
 
-// ── Bouton Nouvelle Oppo ──────────────────────────────────
 document.getElementById('btn-new').addEventListener('click', () => {
   showToast('🚧 Formulaire de création — bientôt disponible !');
 });
 
-// ── Boutons Ajouter (colonnes) ────────────────────────────
 document.querySelectorAll('.add-card-btn').forEach(btn => {
   btn.addEventListener('click', () => showToast('🚧 Ajout rapide — bientôt disponible !'));
 });
 
-// ── Actions rapides (panel) ───────────────────────────────
 document.querySelectorAll('.quick-action').forEach(btn => {
   btn.addEventListener('click', () => {
     if (!currentOpp) return;
@@ -631,24 +583,18 @@ document.querySelectorAll('.quick-action').forEach(btn => {
   });
 });
 
-// ── Fermeture panel ───────────────────────────────────────
 document.getElementById('close-panel').addEventListener('click', closePanel);
 document.getElementById('overlay').addEventListener('click', closePanel);
 
-// ── Modal événements ──────────────────────────────────────
-document.getElementById('modal-cancel').addEventListener('click', closeModal);
+document.getElementById('modal-cancel').addEventListener('click',  closeModal);
 document.getElementById('modal-confirm').addEventListener('click', confirmAction);
 document.getElementById('modal-overlay').addEventListener('click', e => {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
 });
 
-// ── Bouton éditer fiche ───────────────────────────────────
-document.getElementById('btn-edit-fiche').addEventListener('click', () => {
-  if (!currentOpp) return;
-  renderPanelEdit(currentOpp);
-});
-
-// ── Utilitaires ───────────────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  UTILITAIRES
+// ════════════════════════════════════════════════════════
 function formatEuros(val) {
   if (!val) return '0 €';
   return new Intl.NumberFormat('fr-FR', {
@@ -658,7 +604,6 @@ function formatEuros(val) {
 
 function formatDate(d) {
   if (!d) return '—';
-  // Grist Date = secondes depuis epoch
   const date = typeof d === 'number' ? new Date(d * 1000) : new Date(d);
   if (isNaN(date)) return String(d);
   return date.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' });
@@ -673,19 +618,31 @@ function formatDatetime(d) {
 }
 
 function statusBg(statut) {
-  return { Prospect:'#eff6ff','En discussion':'#fffbeb',
-    Proposition:'#f5f3ff', Gagné:'#ecfdf5', Perdu:'#fef2f2' }[statut] || '#f4f6fb';
+  return {
+    Prospect       : '#eff6ff',
+    'En discussion': '#fffbeb',
+    Proposition    : '#f5f3ff',
+    Gagné          : '#ecfdf5',
+    Perdu          : '#fef2f2'
+  }[statut] || '#f4f6fb';
 }
 
 function statusColor(statut) {
-  return { Prospect:'#2563eb','En discussion':'#d97706',
-    Proposition:'#7c3aed', Gagné:'#059669', Perdu:'#dc2626' }[statut] || '#6b7280';
+  return {
+    Prospect       : '#2563eb',
+    'En discussion': '#d97706',
+    Proposition    : '#7c3aed',
+    Gagné          : '#059669',
+    Perdu          : '#dc2626'
+  }[statut] || '#6b7280';
 }
 
 function escHtml(str) {
   return String(str)
-    .replace(/&/g,'&').replace(/</g,'<')
-    .replace(/>/g,'>').replace(/"/g,'"');
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"');
 }
 
 function showToast(msg) {
