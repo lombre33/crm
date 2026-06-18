@@ -454,7 +454,7 @@ function renderTimeline(opp) {
   }
 
   timeline.innerHTML = items.map(item => `
-    <div class="timeline-item">
+    <div class="timeline-item" data-inter-id="${item.id}" style="cursor: pointer;">
       <div class="timeline-dot">${INTERACTION_ICONS[item.type_interaction] || '💬'}</div>
       <div class="timeline-content">
         <div class="timeline-title">
@@ -470,6 +470,14 @@ function renderTimeline(opp) {
       </div>
     </div>
   `).join('');
+
+  // Ajouter les event listeners
+  document.querySelectorAll('.timeline-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const interId = parseInt(el.dataset.interId);
+      openInteractionDetail(interId);
+    });
+  });
 }
 
 // ════════════════════════════════════════════════════════
@@ -652,3 +660,194 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
+// ════════════════════════════════════════════════════════
+//  MODAL DÉTAIL INTERACTION
+// ════════════════════════════════════════════════════════
+function openInteractionDetail(interactionId) {
+  const inter = allInteractions.find(i => i.id === interactionId);
+  if (!inter) return;
+
+  const inter_enriched = resolveInteractionNames({...inter});
+  
+  const dateVal = typeof inter.Date === 'number' 
+    ? new Date(inter.Date * 1000).toISOString().slice(0, 16)
+    : String(inter.Date).slice(0, 16);
+
+  const contactOptions = allContacts.map(c => {
+    const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
+    return `<option value="${c.id}" ${c.id == inter.contact ? 'selected' : ''}>${nom}</option>`;
+  }).join('');
+
+  const assigneeOptions = allContacts.map(c => {
+    const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
+    return `<option value="${c.id}" ${c.id == inter.Assigne ? 'selected' : ''}>${nom}</option>`;
+  }).join('');
+
+  const typeOptions = ['Appel', 'Email', 'Note', 'Réunion'].map(t =>
+    `<option value="${t}" ${t === inter.type_interaction ? 'selected' : ''}>${t}</option>`
+  ).join('');
+
+  document.getElementById('inter-detail-modal').innerHTML = `
+    <div class="inter-detail-content">
+      <div class="inter-detail-header">
+        <h3>${INTERACTION_ICONS[inter.type_interaction] || '💬'} ${inter.type_interaction}</h3>
+        <button class="btn-close-inter" onclick="closeInteractionDetail()">✕</button>
+      </div>
+      
+      <div class="inter-detail-form">
+        <div class="detail-item">
+          <span class="detail-label">Type</span>
+          <select class="detail-input" id="inter-edit-type">
+            ${typeOptions}
+          </select>
+        </div>
+        
+        <div class="detail-item">
+          <span class="detail-label">Date & Heure</span>
+          <input class="detail-input" type="datetime-local" id="inter-edit-date" value="${dateVal}">
+        </div>
+        
+        <div class="detail-item">
+          <span class="detail-label">Contact</span>
+          <select class="detail-input" id="inter-edit-contact">
+            ${contactOptions}
+          </select>
+        </div>
+        
+        <div class="detail-item">
+          <span class="detail-label">Assigné à</span>
+          <select class="detail-input" id="inter-edit-assignee">
+            ${assigneeOptions}
+          </select>
+        </div>
+        
+        <div class="detail-item">
+          <span class="detail-label">Durée (min)</span>
+          <input class="detail-input" type="number" id="inter-edit-duree" value="${inter.duree || 0}">
+        </div>
+        
+        <div class="detail-item detail-full">
+          <span class="detail-label">Contenu</span>
+          <textarea class="detail-input detail-textarea" id="inter-edit-contenu">${escHtml(inter.contenu || '')}</textarea>
+        </div>
+        
+        <div class="detail-item detail-full detail-actions">
+          <button class="btn-save" id="btn-save-inter">💾 Enregistrer</button>
+          <button class="btn-secondary" id="btn-duplicate-inter">📋 Dupliquer</button>
+          <button class="btn-danger" id="btn-delete-inter">🗑️ Supprimer</button>
+          <button class="btn-cancel-edit" id="btn-cancel-inter">✕ Fermer</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('btn-save-inter').addEventListener('click', () => saveInteraction(inter));
+  document.getElementById('btn-duplicate-inter').addEventListener('click', () => duplicateInteraction(inter));
+  document.getElementById('btn-delete-inter').addEventListener('click', () => deleteInteraction(inter.id));
+  document.getElementById('btn-cancel-inter').addEventListener('click', closeInteractionDetail);
+
+  document.getElementById('inter-detail-overlay').classList.add('open');
+}
+
+function closeInteractionDetail() {
+  document.getElementById('inter-detail-overlay').classList.remove('open');
+}
+
+async function saveInteraction(inter) {
+  const newType      = document.getElementById('inter-edit-type').value;
+  const newDateStr   = document.getElementById('inter-edit-date').value;
+  const newContact   = parseInt(document.getElementById('inter-edit-contact').value) || 0;
+  const newAssignee  = parseInt(document.getElementById('inter-edit-assignee').value) || 0;
+  const newDuree     = parseInt(document.getElementById('inter-edit-duree').value) || 0;
+  const newContenu   = document.getElementById('inter-edit-contenu').value.trim();
+
+  if (!newContenu) {
+    showToast('⚠️ Merci de saisir un contenu');
+    return;
+  }
+
+  const newDateTs = newDateStr
+    ? Math.floor(new Date(newDateStr).getTime() / 1000)
+    : inter.Date;
+
+  const fields = {
+    type_interaction: newType,
+    Date            : newDateTs,
+    contact         : newContact,
+    Assigne         : newAssignee,
+    duree           : newDuree,
+    contenu         : newContenu,
+  };
+
+  if (gristReady) {
+    try {
+      await grist.docApi.applyUserActions([
+        ['UpdateRecord', 'Interactions', inter.id, fields]
+      ]);
+      showToast('✅ Interaction mise à jour !');
+    } catch(err) {
+      console.error(err);
+      showToast('❌ Erreur lors de la mise à jour');
+      return;
+    }
+  } else {
+    showToast('✅ Interaction mise à jour (démo)');
+  }
+
+  // Mise à jour locale
+  Object.assign(inter, fields);
+  if (currentOpp) renderTimeline(currentOpp);
+  closeInteractionDetail();
+}
+
+async function duplicateInteraction(inter) {
+  const nowTs = Math.floor(Date.now() / 1000);
+
+  if (gristReady) {
+    try {
+      await grist.docApi.applyUserActions([['AddRecord', 'Interactions', null, {
+        type_interaction: inter.type_interaction,
+        Date            : nowTs,
+        contact         : inter.contact,
+        Opportunite     : inter.Opportunite,
+        Assigne         : inter.Assigne,
+        contenu         : inter.contenu + ' [COPIE]',
+        duree           : inter.duree,
+      }]]);
+      showToast('✅ Interaction dupliquée !');
+    } catch(err) {
+      console.error(err);
+      showToast('❌ Erreur lors de la duplication');
+      return;
+    }
+  } else {
+    showToast('✅ Interaction dupliquée (démo)');
+  }
+
+  if (currentOpp) renderTimeline(currentOpp);
+  closeInteractionDetail();
+}
+
+async function deleteInteraction(interactionId) {
+  if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette interaction ?')) return;
+
+  if (gristReady) {
+    try {
+      await grist.docApi.applyUserActions([
+        ['RemoveRecord', 'Interactions', interactionId]
+      ]);
+      showToast('✅ Interaction supprimée !');
+    } catch(err) {
+      console.error(err);
+      showToast('❌ Erreur lors de la suppression');
+      return;
+    }
+  } else {
+    showToast('✅ Interaction supprimée (démo)');
+  }
+
+  allInteractions = allInteractions.filter(i => i.id !== interactionId);
+  if (currentOpp) renderTimeline(currentOpp);
+  closeInteractionDetail();
+}
+
