@@ -240,48 +240,54 @@
       box-shadow: var(--shadow-xl);
     }
 
-    .card-company {
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: #64748b;
-  margin-bottom: 4px;
-}
-    .card-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 2px;
-}
-    .card-contact { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 4px; }
-
-    .card-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-
-    .card-amount { font-weight: 800; font-size: 0.95rem; color: var(--accent-blue); }
-
-    .card-priority {
-      font-size: 0.68rem; font-weight: 600;
-      padding: 3px 8px; border-radius: 4px;
-      text-transform: uppercase; letter-spacing: 0.3px;
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
     }
 
-    .priority-Haute { background: #fef2f2; color: var(--col-perdu); }
-    .priority-Moyenne { background: #fffbeb; color: var(--col-discussion); }
-    .priority-Basse { background: #f0fdf4; color: var(--col-gagne); }
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+      flex: 1;
+    }
+
+    .card-status {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      margin-left: 8px;
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+      font-size: 0.78rem;
+    }
+
+    .card-line {
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
 
     .card-footer { display: flex; align-items: center; justify-content: space-between; }
-    .card-actions { display: flex; gap: 4px; }
 
-    .card-action {
-      width: 28px; height: 28px; border-radius: 7px;
-      border: 1px solid var(--border-light);
-      background: var(--bg-tertiary);
-      cursor: pointer; font-size: 0.8rem;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s ease;
+    .card-meta {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--col-discussion-bg);
+      color: var(--col-discussion);
     }
-
-    .card-action:hover { background: var(--col-prospect-bg); border-color: var(--col-prospect); transform: scale(1.1); }
-    .card-date { font-size: 0.72rem; color: var(--text-muted); }
 
     .add-card-btn {
       width: 100%; margin-top: 10px;
@@ -296,81 +302,6 @@
     .add-card-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(37,99,235,0.03); }
 
     /* === SIDE PANEL === */
-
-    #inter-detail-overlay {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 1001;
-  align-items: center;
-  justify-content: center;
-}
-
-#inter-detail-overlay.open {
-  display: flex;
-}
-
-#inter-detail-overlay .inter-detail-content {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  width: 95% !important;
-  max-width: 1200px !important;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-}
-
-
-
-.inter-detail-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #f0f0f0;
-  padding-bottom: 15px;
-}
-
-.inter-detail-header h3 {
-  margin: 0;
-  font-size: 18px;
-}
-
-.btn-close-inter {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-.btn-secondary {
-  background: #6366f1;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.btn-danger {
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.inter-detail-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
     .side-panel {
       position: fixed;
       top: 64px; right: -440px;
@@ -425,7 +356,7 @@
       color: var(--text-muted); margin-bottom: 14px;
     }
 
-    .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 
     .quick-action {
       display: flex; flex-direction: column;
@@ -446,29 +377,42 @@
 
     .quick-action.phone .icon { background: var(--col-prospect-bg); }
     .quick-action.email .icon { background: var(--col-discussion-bg); }
-    .quick-action.note .icon { background: var(--col-proposition-bg); }
-    .quick-action.rdv .icon { background: var(--col-gagne-bg); }
-    .quick-action.contact .icon { 
-  background: #e0e7ff; 
-  color: #6366f1; 
-}
+    .quick-action.contact .icon { background: #e0e7ff; color: #6366f1; }
 
     .quick-action span { font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); }
 
     /* === TIMELINE === */
-    .timeline { display: flex; flex-direction: column; gap: 14px; }
-    .timeline-item { display: flex; gap: 12px; align-items: flex-start; }
-
-    .timeline-dot {
-      width: 32px; height: 32px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.85rem; flex-shrink: 0;
+    #timeline-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
 
-    .timeline-dot.appel { background: var(--col-prospect-bg); }
-    .timeline-dot.email { background: var(--col-discussion-bg); }
-    .timeline-dot.note { background: var(--col-proposition-bg); }
-    .timeline-dot.reunion { background: var(--col-gagne-bg); }
+    .timeline-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .timeline-item:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .timeline-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      background: var(--col-prospect-bg);
+    }
 
     .timeline-content { flex: 1; }
     .timeline-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; }
@@ -476,29 +420,28 @@
     .timeline-date { font-size: 0.72rem; color: var(--text-muted); }
     .timeline-empty { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 20px 0; }
 
-    /* === FICHE DÉTAIL === */
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .detail-item { display: flex; flex-direction: column; gap: 3px; }
-
-    .detail-label {
-      font-size: 0.7rem; font-weight: 600;
-      text-transform: uppercase; letter-spacing: 0.5px;
-      color: var(--text-muted);
+    /* === DÉTAIL INPUT === */
+    .detail-input {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1.5px solid var(--border-medium);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      background: var(--bg-secondary);
+      transition: border-color 0.2s;
     }
 
-    .detail-value { font-size: 0.85rem; font-weight: 500; color: var(--text-primary); }
-
-    .btn-edit {
-      width: 100%; padding: 12px;
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border-medium);
-      border-radius: 10px;
-      font-family: inherit; font-size: 0.85rem; font-weight: 600;
-      color: var(--text-primary); cursor: pointer;
-      transition: all 0.2s ease;
+    .detail-input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
     }
 
-    .btn-edit:hover { background: var(--col-prospect-bg); border-color: var(--accent-blue); color: var(--accent-blue); }
+    .detail-textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
 
     /* === PLACEHOLDER VIEWS === */
     .placeholder-view {
@@ -536,7 +479,7 @@
       text-transform: uppercase; letter-spacing: 0.4px;
     }
 
-    .modal textarea, .modal input[type="number"] {
+    .modal textarea, .modal input[type="number"], .modal select {
       width: 100%; border: 1px solid var(--border-medium);
       border-radius: 10px; padding: 10px 12px;
       font-family: inherit; font-size: 0.88rem;
@@ -545,7 +488,7 @@
       margin-bottom: 14px;
     }
 
-    .modal textarea:focus, .modal input[type="number"]:focus {
+    .modal textarea:focus, .modal input[type="number"]:focus, .modal select:focus {
       border-color: var(--accent-blue);
       box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
     }
@@ -569,6 +512,147 @@
     }
 
     .btn-confirm:hover { background: #1d4ed8; }
+
+    /* === MODAL DÉTAIL INTERACTION === */
+    #inter-detail-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1001;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #inter-detail-overlay.open {
+      display: flex;
+    }
+
+    #inter-detail-modal {
+      background: white;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .detail-header h2 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .detail-header button {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+
+    .detail-header button:hover {
+      color: var(--text-primary);
+    }
+
+    .detail-body {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .detail-item.detail-full {
+      grid-column: 1 / -1;
+    }
+
+    .detail-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    .detail-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn-save {
+      background: var(--accent-blue);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      flex: 1;
+    }
+
+    .btn-save:hover { background: #1d4ed8; }
+
+    .btn-secondary {
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      font-family: inherit;
+      flex: 1;
+    }
+
+    .btn-secondary:hover { background: #4f46e5; }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      font-family: inherit;
+      flex: 1;
+    }
+
+    .btn-danger:hover { background: #dc2626; }
+
+    .btn-cancel-edit {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      border: 1.5px solid var(--border-medium);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      flex: 1;
+    }
+
+    .btn-cancel-edit:hover { background: var(--border-light); }
 
     /* === TOAST === */
     .toast {
@@ -600,58 +684,9 @@
       .btn-new { padding: 10px; }
       .kanban-column { flex: 0 0 250px; }
       .side-panel { width: 100%; right: -100%; }
+      .quick-actions { grid-template-columns: repeat(2, 1fr); }
+      #inter-detail-modal { max-width: 95vw; }
     }
-    /* ── Panel édition ── */
-.detail-input {
-  width: 100%;
-  padding: 6px 10px;
-  border: 1.5px solid var(--border-medium);
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 0.85rem;
-  color: var(--text-primary);
-  background: var(--bg-secondary);
-  transition: border-color 0.2s;
-}
-.detail-input:focus {
-  outline: none;
-  border-color: var(--accent-blue);
-}
-.detail-textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-.detail-full {
-  grid-column: 1 / -1;
-}
-.detail-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 4px;
-}
-.btn-save {
-  background: var(--accent-blue);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 18px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-}
-.btn-save:hover { background: #1d4ed8; }
-.btn-cancel-edit {
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  border: 1.5px solid var(--border-medium);
-  border-radius: 8px;
-  padding: 8px 18px;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: inherit;
-}
-.btn-cancel-edit:hover { background: var(--border-light); }
-
   </style>
 </head>
 <body>
@@ -795,48 +830,15 @@
       <div class="panel-contact" id="panel-contact">—</div>
       <div class="panel-status" id="panel-status"></div>
       <div class="panel-amount" id="panel-amount"></div>
-      
-</div>
-
     </div>
 
-    <div class="panel-section">
-      <div class="panel-section-title">Fiche opportunité</div>
-      <div class="detail-grid" id="panel-details"></div>
-    </div>
-
-    <div class="panel-section">
-      <div class="panel-section-title">Actions rapides</div>
-     <div class="quick-actions">
-  <div class="quick-action phone" onclick="callContact()">
-    <div class="icon">📞</div><span>Appel</span>
-  </div>
-  <div class="quick-action email" onclick="sendEmail()">
-    <div class="icon">📧</div><span>Email</span>
-  </div>
-  <div class="quick-action note" data-type="Note" onclick="currentActionType='Note'; openQuickActionModal('Note')">
-    <div class="icon">📝</div><span>Note</span>
-  </div>
-  <div class="quick-action rdv" data-type="Réunion" onclick="currentActionType='Réunion'; openQuickActionModal('Réunion')">
-    <div class="icon">📅</div><span>RDV</span>
-  </div>
-  <div class="quick-action contact" onclick="openAddContactToOpp()">
-    <div class="icon">👥</div><span>+ Contact</span>
-  </div>
-</div>
-    </div>
-
-    <div class="panel-section">
-      <div class="panel-section-title">Dernières interactions</div>
-      <div class="timeline" id="panel-timeline"></div>
-    </div>
-
-    <div class="panel-section">
-      <button class="btn-edit" id="btn-edit-fiche">✏️ Éditer la fiche complète</button>
-    </div>
+    <div id="panel-content"></div>
   </aside>
-  <div id="inter-detail-overlay" class="modal-overlay">
-  <div id="inter-detail-modal" class="modal-content"></div>
+
+  <!-- MODAL DÉTAIL INTERACTION (EN DEHORS DU SIDE-PANEL) ✅ -->
+  <div id="inter-detail-overlay">
+    <div id="inter-detail-modal"></div>
+  </div>
 
   <!-- MODAL QUICK ACTION -->
   <div class="modal-overlay" id="modal-overlay">
@@ -844,8 +846,8 @@
       <div class="modal-title" id="modal-title">📝 Ajouter une note</div>
       <label for="modal-note">Contenu *</label>
       <textarea id="modal-note" rows="4" placeholder="Décrivez l'interaction..."></textarea>
-      <label id="modal-duree-label" for="modal-duree">Durée (minutes)</label>
-      <input type="number" id="modal-duree" min="0" value="30" style="display:none;">
+      <label id="modal-duree-label" for="modal-duree" style="display: none;">Durée (minutes)</label>
+      <input type="number" id="modal-duree" min="0" value="30" style="display: none;">
       <div class="modal-actions">
         <button class="btn-cancel" id="modal-cancel">Annuler</button>
         <button class="btn-confirm" id="modal-confirm">✅ Enregistrer</button>
