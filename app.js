@@ -279,9 +279,17 @@ function renderPanelEdit(opp) {
 }).join('');
 
 
-  const entrepriseOptions = allEntreprises.map(e =>
-  `<option value="${e.id}" ${parseInt(e.id) === parseInt(opp.Entreprise) ? 'selected' : ''}>${e.Nom}</option>`
+ const entrepriseSelect = allEntreprises.find(e => e.id == opp.Entreprise);
+const entrepriseOptions = allEntreprises.map(e =>
+  `<option value="${e.id}" ${e.id == opp.Entreprise ? 'selected' : ''}>${e.Nom}</option>`
 ).join('');
+
+const contactSelect = allContacts.find(c => c.id == opp.contact_principale);
+const contactOptions = allContacts.map(c => {
+  const nom = c.nom_prenom || (c.Prenom + ' ' + c.Nom).trim();
+  return `<option value="${c.id}" ${c.id == opp.contact_principale ? 'selected' : ''}>${nom}</option>`;
+}).join('');
+
 
 
   const assigneeOptions = allContacts.map(c => {
