@@ -161,8 +161,8 @@ function createCard(opp) {
     : '';
 
   card.innerHTML = `
-    <div class="card-company">${opp._entrepriseNom}</div>
     <div class="card-title">${opp.titre}</div>
+    <div class="card-company">${opp._entrepriseNom}</div>
     <div class="card-contact">👤 ${opp._contactNom}</div>
     <div class="card-meta">
       <div class="card-amount">${formatEuros(opp.valeur_estilmee)}</div>
