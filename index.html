@@ -510,6 +510,57 @@
       .kanban-column { flex: 0 0 250px; }
       .side-panel { width: 100%; right: -100%; }
     }
+    /* ── Panel édition ── */
+.detail-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1.5px solid var(--border-medium);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  transition: border-color 0.2s;
+}
+.detail-input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+.detail-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+.detail-full {
+  grid-column: 1 / -1;
+}
+.detail-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.btn-save {
+  background: var(--accent-blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-save:hover { background: #1d4ed8; }
+.btn-cancel-edit {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border-medium);
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-cancel-edit:hover { background: var(--border-light); }
+
   </style>
 </head>
 <body>
