@@ -168,35 +168,43 @@ function createCard(opp) {
   card.draggable = true;
   card.dataset.id = opp.id;
 
-  const statusColor = {
-    Prospect       : '#2563eb',
-    'En discussion': '#d97706',
-    Proposition    : '#7c3aed',
-    Gagné          : '#059669',
-    Perdu          : '#dc2626'
-  }[opp.statut] || '#6b7280';
+  const statusBgColor = statusBg(opp.statut);
+  const statusTextColor = statusColor(opp.statut);
 
   card.innerHTML = `
-    <div class="card-header">
-      <div class="card-title">${escHtml(opp.titre)}</div>
-      <div class="card-status" style="background-color: ${statusColor}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">
-        ${opp.statut}
+    <div class="card-company">📍 ${escHtml(opp._entrepriseNom)}</div>
+    <div class="card-title">${escHtml(opp.titre)}</div>
+    <div class="card-contact">👤 ${escHtml(opp._contactNom)}</div>
+    
+    <div class="card-meta">
+      <div class="card-amount">${formatEuros(opp.valeur_estilmee)}</div>
+      <div class="card-priority priority-${opp.Priorite || 'Moyenne'}">
+        ${opp.Priorite || 'Moyenne'}
       </div>
     </div>
-    <div class="card-body">
-      <div class="card-line">🏢 ${escHtml(opp._entrepriseNom)}</div>
-      <div class="card-line">👤 ${escHtml(opp._contactNom)}</div>
-      <div class="card-line">💰 ${formatEuros(opp.valeur_estilmee)}</div>
-    </div>
+
     <div class="card-footer">
-      <div class="card-meta">${opp.Priorite}</div>
+      <div class="card-actions">
+        <button class="card-action" data-action="Appel" title="Appel">📞</button>
+        <button class="card-action" data-action="Email" title="Email">📧</button>
+        <button class="card-action" data-action="Note" title="Note">📝</button>
+      </div>
+      <div class="card-date">${formatDate(opp.date_closing_estimee)}</div>
     </div>
   `;
 
   card.addEventListener('click', () => openPanelEdit(opp));
 
+  card.querySelectorAll('.card-action').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      openQuickActionModal(btn.dataset.action, opp);
+    });
+  });
+
   return card;
 }
+
 
 // ════════════════════════════════════════════════════════
 //  DRAG & DROP
@@ -949,4 +957,60 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
+}
+function openQuickActionModal(type, opp = null) {
+  if (!opp && !currentOpp) return;
+  
+  currentOpp = opp || currentOpp;
+  currentActionType = type;
+
+  const icons = { 'Appel':'📞', 'Email':'📧', 'Note':'📝', 'Réunion':'📅' };
+  document.getElementById('modal-title').textContent = 
+    `${icons[type] || '📝'} ${type} — ${currentOpp._entrepriseNom}`;
+  
+  document.getElementById('modal-note').value = '';
+  document.getElementById('modal-duree').value = 30;
+
+  // Afficher champ durée seulement pour Appel et Réunion
+  const dureeLabel = document.getElementById('modal-duree-label');
+  const dureeInput = document.getElementById('modal-duree');
+  
+  if (type === 'Appel' || type === 'Réunion') {
+    dureeLabel.style.display = 'block';
+    dureeInput.style.display = 'block';
+  } else {
+    dureeLabel.style.display = 'none';
+    dureeInput.style.display = 'none';
+  }
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function openAddContactToOpp() {
+  if (!currentOpp) return;
+  showToast('🚧 Ajout de contact — bientôt disponible !');
+}
+
+function callContact() {
+  if (!currentOpp) return;
+  const contact = allContacts.find(c => c.id === currentOpp.contact_principale);
+  if (!contact || !contact.numero_pro) {
+    showToast('❌ Aucun numéro pour ce contact');
+    return;
+  }
+  showToast(`📞 Numéro : ${contact.numero_pro}`);
+}
+
+function sendEmail() {
+  if (!currentOpp) return;
+  const contact = allContacts.find(c => c.id === currentOpp.contact_principale);
+  if (!contact || !contact.Email_fonctionnel) {
+    showToast('❌ Aucun email pour ce contact');
+    return;
+  }
+  showToast(`📧 Email : ${contact.Email_fonctionnel}`);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
 }
