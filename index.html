@@ -823,17 +823,52 @@
   <div class="overlay" id="overlay"></div>
 
   <!-- SIDE PANEL -->
-  <aside class="side-panel" id="side-panel">
-    <div class="side-panel-header">
-      <button class="close-panel" id="close-panel">✕</button>
-      <div class="panel-company" id="panel-company">—</div>
-      <div class="panel-contact" id="panel-contact">—</div>
-      <div class="panel-status" id="panel-status"></div>
-      <div class="panel-amount" id="panel-amount"></div>
-    </div>
+ <!-- SIDE PANEL -->
+<aside class="side-panel" id="side-panel">
+  <div class="side-panel-header">
+    <button class="close-panel" id="close-panel">✕</button>
+    <div class="panel-company" id="panel-company">—</div>
+    <div class="panel-contact" id="panel-contact">—</div>
+    <div class="panel-status" id="panel-status"></div>
+    <div class="panel-amount" id="panel-amount"></div>
+  </div>
 
-    <div id="panel-content"></div>
-  </aside>
+  <div class="panel-section">
+    <div class="panel-section-title">Fiche opportunité</div>
+    <div class="detail-grid" id="panel-details"></div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-section-title">Actions rapides</div>
+    <div class="quick-actions">
+      <div class="quick-action phone" onclick="callContact()">
+        <div class="icon">📞</div><span>Appel</span>
+      </div>
+      <div class="quick-action email" onclick="sendEmail()">
+        <div class="icon">📧</div><span>Email</span>
+      </div>
+      <div class="quick-action note" onclick="openQuickActionModal('Note')">
+        <div class="icon">📝</div><span>Note</span>
+      </div>
+      <div class="quick-action rdv" onclick="openQuickActionModal('Réunion')">
+        <div class="icon">📅</div><span>RDV</span>
+      </div>
+      <div class="quick-action contact" onclick="openAddContactToOpp()">
+        <div class="icon">👥</div><span>+ Contact</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-section-title">Dernières interactions</div>
+    <div class="timeline" id="panel-timeline"></div>
+  </div>
+
+  <div class="panel-section">
+    <button class="btn-edit" id="btn-edit-fiche">✏️ Éditer la fiche complète</button>
+  </div>
+</aside>
+
 
   <!-- MODAL DÉTAIL INTERACTION (EN DEHORS DU SIDE-PANEL) ✅ -->
   <div id="inter-detail-overlay">
