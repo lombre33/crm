@@ -9,6 +9,10 @@ let currentOpp       = null;
 let gristReady       = false;
 let draggedCardId    = null;
 
+// 🆕 NOUVELLES VARIABLES GLOBALES
+window.allSecteurs   = [];
+window.allVilles     = [];
+
 // ════════════════════════════════════════════════════════
 //  CHARGEMENT GRIST
 // ════════════════════════════════════════════════════════
@@ -16,11 +20,13 @@ async function loadAllData() {
   grist.ready({ requiredAccess: 'full', allowSelectBy: true });
 
   try {
-    const [opps, contacts, entreprises, interactions] = await Promise.all([
+    const [opps, contacts, entreprises, interactions, secteurs, villes] = await Promise.all([
       grist.docApi.fetchTable('Opportunites'),
       grist.docApi.fetchTable('Annuaire'),
       grist.docApi.fetchTable('Entreprise'),
       grist.docApi.fetchTable('Interactions'),
+      grist.docApi.fetchTable('Secteur'),      // 🆕
+      grist.docApi.fetchTable('Ville'),        // 🆕
     ]);
 
     allContacts = contacts.id.map((id, i) => ({
@@ -36,9 +42,29 @@ async function loadAllData() {
 
     allEntreprises = entreprises.id.map((id, i) => ({
       id,
-      Nom    : entreprises.Nom?.[i]     || '',
-      Secteur: entreprises.Secteur?.[i] || '',
-      Ville  : entreprises.Ville?.[i]   || '',
+      Nom               : entreprises.Nom?.[i]                || '',
+      Siret             : entreprises.Siret?.[i]              || '',
+      Secteur           : entreprises.Secteur?.[i]            || null,
+      Ville             : entreprises.Ville?.[i]              || null,
+      taille            : entreprises.taille?.[i]             || '',
+      site_web_         : entreprises.site_web_?.[i]          || '',
+      Adresse_1         : entreprises.Adresse_1?.[i]          || '',
+      Adresse_2         : entreprises.Adresse_2?.[i]          || '',
+      Adresse_3         : entreprises.Adresse_3?.[i]          || '',
+      CP                : entreprises.CP?.[i]                 || '',
+      Contact_principale: entreprises.Contact_principale?.[i] || null,
+    }));
+
+    // 🆕 SECTEURS
+    window.allSecteurs = secteurs.id.map((id, i) => ({
+      id,
+      nom: secteurs.nom?.[i] || '',
+    }));
+
+    // 🆕 VILLES
+    window.allVilles = villes.id.map((id, i) => ({
+      id,
+      nom: villes.nom?.[i] || '',
     }));
 
     // 🔥 Extraction propre des interactions
@@ -64,7 +90,9 @@ async function loadAllData() {
       opps: allOpportunites.length,
       contacts: allContacts.length,
       entreprises: allEntreprises.length,
-      interactions: allInteractions.length
+      interactions: allInteractions.length,
+      secteurs: window.allSecteurs.length,
+      villes: window.allVilles.length,
     });
 
     gristReady = true;
