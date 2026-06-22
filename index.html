@@ -10,7 +10,9 @@
 </head>
 <body>
 
-<!-- NAVBAR -->
+<!-- ════════════════════════════════════════════════════════
+     NAVBAR
+     ════════════════════════════════════════════════════════ -->
 <nav class="navbar">
   <div class="nav-brand">
     <div class="nav-logo">🎓</div>
@@ -32,16 +34,21 @@
   </div>
 </nav>
 
-<!-- VUES PLACEHOLDER -->
+<!-- ════════════════════════════════════════════════════════
+     VUES PLACEHOLDER (Dashboard, Contacts, etc.)
+     ════════════════════════════════════════════════════════ -->
 <div class="placeholder-view" id="view-dashboard">📊 Dashboard — bientôt disponible</div>
 <div class="placeholder-view" id="view-contacts">👤 Contacts — bientôt disponible</div>
 <div class="placeholder-view" id="view-entreprises">🏢 Entreprises — bientôt disponible</div>
 <div class="placeholder-view" id="view-interactions">💬 Interactions — bientôt disponible</div>
 <div class="placeholder-view" id="view-evenements">📅 Évènements — bientôt disponible</div>
 
-<!-- VUE OPPORTUNITÉS : KANBAN -->
+<!-- ════════════════════════════════════════════════════════
+     VUE KANBAN (Opportunités)
+     ════════════════════════════════════════════════════════ -->
 <div class="kanban-view" id="kanban-view">
 
+  <!-- COLONNE : PROSPECT -->
   <div class="kanban-col" data-statut="Prospect">
     <div class="col-header">
       <div class="col-title">🎯 Prospect</div>
@@ -52,6 +59,7 @@
     <button class="add-card-btn">+ Ajouter</button>
   </div>
 
+  <!-- COLONNE : EN DISCUSSION -->
   <div class="kanban-col" data-statut="En discussion">
     <div class="col-header">
       <div class="col-title">💬 En discussion</div>
@@ -62,6 +70,7 @@
     <button class="add-card-btn">+ Ajouter</button>
   </div>
 
+  <!-- COLONNE : PROPOSITION -->
   <div class="kanban-col" data-statut="Proposition">
     <div class="col-header">
       <div class="col-title">📄 Proposition</div>
@@ -72,6 +81,7 @@
     <button class="add-card-btn">+ Ajouter</button>
   </div>
 
+  <!-- COLONNE : GAGNÉ -->
   <div class="kanban-col" data-statut="Gagné">
     <div class="col-header">
       <div class="col-title">✅ Gagné</div>
@@ -82,6 +92,7 @@
     <button class="add-card-btn">+ Ajouter</button>
   </div>
 
+  <!-- COLONNE : PERDU -->
   <div class="kanban-col" data-statut="Perdu">
     <div class="col-header">
       <div class="col-title">❌ Perdu</div>
@@ -94,69 +105,70 @@
 
 </div><!-- fin #kanban-view -->
 
-<!-- OVERLAY -->
+<!-- ════════════════════════════════════════════════════════
+     OVERLAY (fermeture panel)
+     ════════════════════════════════════════════════════════ -->
 <div class="overlay" id="overlay"></div>
 
-<!-- SIDE PANEL (fixed, hors kanban) -->
+<!-- ════════════════════════════════════════════════════════
+     SIDE PANEL (détails + édition opportunité)
+     ════════════════════════════════════════════════════════ -->
 <aside class="side-panel" id="side-panel">
   <div class="panel-header">
-    <div>
+    <div class="panel-header-info">
       <div class="panel-company" id="panel-company">—</div>
-      <div class="panel-status" id="panel-status"></div>
-      <div class="panel-amount" id="panel-amount"></div>
+      <div class="panel-status" id="panel-status">—</div>
+      <div class="panel-amount" id="panel-amount">0 €</div>
     </div>
     <button class="close-panel" id="close-panel">✕</button>
   </div>
 
   <div class="panel-scroll">
-    <!-- Formulaire édition -->
-    <div id="panel-form"></div>
+    <!-- SECTION : DÉTAILS & ÉDITION -->
+    <div id="panel-details"></div>
 
-    <!-- Actions directes -->
+    <!-- SECTION : TIMELINE / HISTORIQUE -->
     <div class="panel-section">
-      <div class="panel-section-title">Actions directes</div>
-      <div id="panel-actions"></div>
-    </div>
-
-    <!-- Logger interaction -->
-    <div class="panel-section">
-      <div class="panel-section-title">Logger une interaction</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn-log-type" onclick="openLogModal('Appel')">📞 Appel</button>
-        <button class="btn-log-type" onclick="openLogModal('Email')">📧 Email</button>
-        <button class="btn-log-type" onclick="openLogModal('Note')">📝 Note</button>
-        <button class="btn-log-type" onclick="openLogModal('Réunion')">📅 RDV</button>
-      </div>
-    </div>
-
-    <!-- Timeline -->
-    <div class="panel-section">
-      <div class="panel-section-title">Historique</div>
+      <div class="panel-section-title">📜 Historique</div>
       <div id="panel-timeline"></div>
     </div>
   </div>
 </aside>
 
-<!-- MODAL LOG INTERACTION -->
+<!-- ════════════════════════════════════════════════════════
+     MODAL : LOGGER INTERACTION
+     ════════════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="log-modal">
   <div class="modal-box">
-    <div class="modal-title">Logger une interaction</div>
+    <div class="modal-header">
+      <div class="modal-title">Logger une interaction</div>
+      <button class="modal-close" onclick="closeLogModal()">✕</button>
+    </div>
     <div id="log-modal-body"></div>
   </div>
 </div>
 
-<!-- MODAL DÉTAIL INTERACTION -->
+<!-- ════════════════════════════════════════════════════════
+     MODAL : DÉTAIL INTERACTION
+     ════════════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="inter-detail-overlay">
   <div class="modal-box modal-large">
-    <div class="modal-title">Détail interaction</div>
+    <div class="modal-header">
+      <div class="modal-title">Détail interaction</div>
+      <button class="modal-close" onclick="closeInterDetailModal()">✕</button>
+    </div>
     <div id="inter-detail-body"></div>
   </div>
 </div>
 
-<!-- TOAST -->
+<!-- ════════════════════════════════════════════════════════
+     TOAST (notifications)
+     ════════════════════════════════════════════════════════ -->
 <div class="toast" id="toast"></div>
 
-<!-- SCRIPTS -->
+<!-- ════════════════════════════════════════════════════════
+     SCRIPTS
+     ════════════════════════════════════════════════════════ -->
 <script src="js/config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/kanban.js"></script>
