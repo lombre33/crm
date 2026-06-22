@@ -3,897 +3,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CRM PUI - Université de Bordeaux</title>
+  <title>CRM PUI - Opportunités</title>
+  <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-primary: #f4f6fb;
-      --bg-secondary: #ffffff;
-      --bg-tertiary: #f8f9fc;
-      --text-primary: #1a1d26;
-      --text-secondary: #6b7280;
-      --text-muted: #9ca3af;
-      --border-light: #e5e7eb;
-      --border-medium: #d1d5db;
-      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
-      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.03);
-      --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-      --col-prospect: #3b82f6;
-      --col-prospect-bg: #eff6ff;
-      --col-discussion: #f59e0b;
-      --col-discussion-bg: #fffbeb;
-      --col-proposition: #8b5cf6;
-      --col-proposition-bg: #f5f3ff;
-      --col-gagne: #10b981;
-      --col-gagne-bg: #ecfdf5;
-      --col-perdu: #ef4444;
-      --col-perdu-bg: #fef2f2;
-      --accent-blue: #2563eb;
-      --accent-green: #059669;
-      --accent-orange: #ea580c;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* === TOP NAV === */
-    .top-nav {
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border-light);
-      padding: 0 24px;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .nav-left { display: flex; align-items: center; gap: 24px; }
-
-    .logo {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 800; font-size: 1.1rem; color: var(--text-primary);
-      white-space: nowrap;
-    }
-
-    .logo-icon {
-      width: 36px; height: 36px;
-      background: linear-gradient(135deg, var(--accent-blue), #7c3aed);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 1.1rem; flex-shrink: 0;
-    }
-
-    .nav-tabs { display: flex; gap: 4px; }
-
-    .nav-tab {
-      display: flex; align-items: center; gap: 6px;
-      padding: 8px 12px;
-      border: none; background: none;
-      border-radius: 8px;
-      font-family: inherit; font-size: 0.82rem; font-weight: 500;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .nav-tab:hover { background: var(--bg-tertiary); color: var(--text-primary); }
-    .nav-tab.active { background: var(--col-prospect-bg); color: var(--accent-blue); font-weight: 700; }
-
-    .nav-right { display: flex; align-items: center; gap: 12px; }
-
-    .search-bar {
-      display: flex; align-items: center; gap: 8px;
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border-light);
-      border-radius: 10px;
-      padding: 8px 14px;
-      width: 240px;
-      transition: all 0.2s ease;
-    }
-
-    .search-bar:focus-within {
-      border-color: var(--accent-blue);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
-    }
-
-    .search-bar input {
-      border: none; background: none;
-      font-family: inherit; font-size: 0.85rem;
-      color: var(--text-primary); outline: none; width: 100%;
-    }
-
-    .search-bar svg { color: var(--text-muted); flex-shrink: 0; }
-
-    .btn-new {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--accent-blue); color: white;
-      border: none; border-radius: 10px;
-      padding: 10px 18px;
-      font-family: inherit; font-size: 0.85rem; font-weight: 700;
-      cursor: pointer; transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .btn-new:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: var(--shadow-md); }
-
-    /* === MAIN === */
-    .main-content {
-      margin-top: 64px;
-      padding: 20px 24px;
-      height: calc(100vh - 64px);
-      overflow: hidden;
-    }
-
-    /* === KANBAN === */
-    .kanban-container {
-      display: flex;
-      gap: 16px;
-      height: 100%;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      align-items: flex-start;
-    }
-
-    .kanban-container::-webkit-scrollbar { height: 6px; }
-    .kanban-container::-webkit-scrollbar-track { background: transparent; }
-    .kanban-container::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 3px; }
-
-    .kanban-column {
-      flex: 0 0 270px;
-      background: var(--bg-tertiary);
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      max-height: 100%;
-      border: 1px solid var(--border-light);
-    }
-
-    .kanban-column.drag-over {
-      background: #e0f0ff;
-      border-color: var(--accent-blue);
-    }
-
-    .column-header {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      margin-bottom: 14px;
-    }
-
-    .column-title {
-      display: flex; align-items: center; gap: 8px;
-      font-weight: 700; font-size: 0.85rem;
-    }
-
-    .column-title .icon {
-      width: 28px; height: 28px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.9rem;
-    }
-
-    .column-title.prospect { color: var(--col-prospect); }
-    .column-title.prospect .icon { background: var(--col-prospect-bg); }
-    .column-title.discussion { color: var(--col-discussion); }
-    .column-title.discussion .icon { background: var(--col-discussion-bg); }
-    .column-title.proposition { color: var(--col-proposition); }
-    .column-title.proposition .icon { background: var(--col-proposition-bg); }
-    .column-title.gagne { color: var(--col-gagne); }
-    .column-title.gagne .icon { background: var(--col-gagne-bg); }
-    .column-title.perdu { color: var(--col-perdu); }
-    .column-title.perdu .icon { background: var(--col-perdu-bg); }
-
-    .column-header-right {
-      display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
-    }
-
-    .column-count {
-      background: var(--bg-secondary);
-      color: var(--text-secondary);
-      font-weight: 600; font-size: 0.75rem;
-      padding: 3px 9px; border-radius: 20px;
-      border: 1px solid var(--border-light);
-    }
-
-    .column-total {
-      font-size: 0.72rem; font-weight: 700;
-      color: var(--accent-blue);
-      background: var(--col-prospect-bg);
-      border-radius: 6px;
-      padding: 2px 8px;
-    }
-
-    .column-cards {
-      flex: 1; overflow-y: auto;
-      display: flex; flex-direction: column; gap: 10px;
-    }
-
-    .column-cards::-webkit-scrollbar { width: 4px; }
-    .column-cards::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 2px; }
-
-    /* === CARDS === */
-    .opportunity-card {
-      background: var(--bg-secondary);
-      border-radius: 12px;
-      padding: 14px;
-      cursor: grab;
-      transition: all 0.2s ease;
-      border: 1px solid var(--border-light);
-    }
-
-    .opportunity-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
-
-    .opportunity-card.dragging {
-      opacity: 0.4;
-      transform: rotate(2deg) scale(1.02);
-      box-shadow: var(--shadow-xl);
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 8px;
-    }
-
-    .card-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #1e293b;
-      flex: 1;
-    }
-
-    .card-status {
-      font-size: 0.65rem;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 4px;
-      white-space: nowrap;
-      margin-left: 8px;
-    }
-
-    .card-body {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 10px;
-      font-size: 0.78rem;
-    }
-
-    .card-line {
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .card-footer { display: flex; align-items: center; justify-content: space-between; }
-
-    .card-meta {
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 4px;
-      background: var(--col-discussion-bg);
-      color: var(--col-discussion);
-    }
-
-    .add-card-btn {
-      width: 100%; margin-top: 10px;
-      padding: 10px; border-radius: 10px;
-      border: 2px dashed var(--border-medium);
-      background: none; cursor: pointer;
-      font-family: inherit; font-size: 0.8rem;
-      font-weight: 600; color: var(--text-muted);
-      transition: all 0.2s ease;
-    }
-
-    .add-card-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(37,99,235,0.03); }
-
-    /* === SIDE PANEL === */
-    .side-panel {
-      position: fixed;
-      top: 64px; right: -440px;
-      width: 420px;
-      height: calc(100vh - 64px);
-      background: var(--bg-secondary);
-      box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-      transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 90;
-      overflow-y: auto;
-      border-left: 1px solid var(--border-light);
-    }
-
-    .side-panel.open { right: 0; }
-
-    .side-panel-header {
-      padding: 24px;
-      border-bottom: 1px solid var(--border-light);
-      position: relative;
-    }
-
-    .close-panel {
-      position: absolute; top: 16px; right: 16px;
-      width: 32px; height: 32px;
-      border-radius: 8px; border: none;
-      background: var(--bg-tertiary);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.9rem;
-      transition: all 0.2s ease;
-    }
-
-    .close-panel:hover { background: var(--col-perdu-bg); color: var(--col-perdu); }
-
-    .panel-company { font-weight: 800; font-size: 1.2rem; margin-bottom: 6px; }
-    .panel-contact { color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 10px; }
-
-    .panel-status {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 5px 12px; border-radius: 20px;
-      font-size: 0.78rem; font-weight: 600;
-    }
-
-    .panel-amount { font-size: 1.1rem; font-weight: 800; color: var(--accent-blue); margin-top: 8px; }
-
-    .panel-section { padding: 20px 24px; border-bottom: 1px solid var(--border-light); }
-    .panel-section:last-child { border-bottom: none; }
-
-    .panel-section-title {
-      font-size: 0.75rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.8px;
-      color: var(--text-muted); margin-bottom: 14px;
-    }
-
-    .quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-
-    .quick-action {
-      display: flex; flex-direction: column;
-      align-items: center; gap: 6px;
-      padding: 12px 8px; border-radius: 12px;
-      border: 1px solid var(--border-light);
-      background: var(--bg-tertiary);
-      cursor: pointer; transition: all 0.2s ease;
-    }
-
-    .quick-action:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-
-    .quick-action .icon {
-      width: 36px; height: 36px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem;
-    }
-
-    .quick-action.phone .icon { background: var(--col-prospect-bg); }
-    .quick-action.email .icon { background: var(--col-discussion-bg); }
-    .quick-action.contact .icon { background: #e0e7ff; color: #6366f1; }
-
-    .quick-action span { font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); }
-
-    /* === TIMELINE === */
-    #timeline-container {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .timeline-item {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      cursor: pointer;
-      padding: 10px;
-      border-radius: 8px;
-      transition: all 0.2s ease;
-    }
-
-    .timeline-item:hover {
-      background: var(--bg-tertiary);
-    }
-
-    .timeline-dot {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-      flex-shrink: 0;
-      background: var(--col-prospect-bg);
-    }
-
-    .timeline-content { flex: 1; }
-    .timeline-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; }
-    .timeline-body { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 4px; line-height: 1.4; }
-    .timeline-date { font-size: 0.72rem; color: var(--text-muted); }
-    .timeline-empty { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 20px 0; }
-
-    /* === DÉTAIL INPUT === */
-    .detail-input {
-      width: 100%;
-      padding: 6px 10px;
-      border: 1.5px solid var(--border-medium);
-      border-radius: 8px;
-      font-family: inherit;
-      font-size: 0.85rem;
-      color: var(--text-primary);
-      background: var(--bg-secondary);
-      transition: border-color 0.2s;
-    }
-
-    .detail-input:focus {
-      outline: none;
-      border-color: var(--accent-blue);
-    }
-
-    .detail-textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-
-    /* === PLACEHOLDER VIEWS === */
-    .placeholder-view {
-      display: none; flex-direction: column;
-      align-items: center; justify-content: center;
-      height: calc(100vh - 120px); text-align: center;
-    }
-
-    .placeholder-view.active { display: flex; }
-    .placeholder-icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.4; }
-    .placeholder-title { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
-    .placeholder-subtitle { color: var(--text-muted); font-size: 0.9rem; }
-
-    /* === MODAL === */
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.35);
-      z-index: 200;
-      display: none; align-items: center; justify-content: center;
-    }
-
-    .modal-overlay.open { display: flex; }
-
-    .modal {
-      background: white; border-radius: 16px;
-      padding: 28px; width: 440px; max-width: 90vw;
-      box-shadow: var(--shadow-xl);
-    }
-
-    .modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 18px; }
-
-    .modal label {
-      display: block; font-size: 0.78rem; font-weight: 600;
-      color: var(--text-secondary); margin-bottom: 6px;
-      text-transform: uppercase; letter-spacing: 0.4px;
-    }
-
-    .modal textarea, .modal input[type="number"], .modal select {
-      width: 100%; border: 1px solid var(--border-medium);
-      border-radius: 10px; padding: 10px 12px;
-      font-family: inherit; font-size: 0.88rem;
-      outline: none; resize: vertical;
-      transition: border-color 0.2s;
-      margin-bottom: 14px;
-    }
-
-    .modal textarea:focus, .modal input[type="number"]:focus, .modal select:focus {
-      border-color: var(--accent-blue);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
-    }
-
-    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
-
-    .btn-cancel {
-      padding: 10px 20px; border-radius: 10px;
-      border: 1px solid var(--border-medium);
-      background: white; font-family: inherit; font-size: 0.85rem;
-      font-weight: 600; cursor: pointer; transition: all 0.2s;
-    }
-
-    .btn-cancel:hover { background: var(--bg-tertiary); }
-
-    .btn-confirm {
-      padding: 10px 20px; border-radius: 10px;
-      border: none; background: var(--accent-blue); color: white;
-      font-family: inherit; font-size: 0.85rem; font-weight: 700;
-      cursor: pointer; transition: all 0.2s;
-    }
-
-    .btn-confirm:hover { background: #1d4ed8; }
-
-    /* === MODAL DÉTAIL INTERACTION === */
-    #inter-detail-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 1001;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    #inter-detail-overlay.open {
-      display: flex;
-    }
-
-    #inter-detail-modal {
-      background: white;
-      border-radius: 12px;
-      width: 100%;
-      max-width: 700px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-
-    .detail-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 24px;
-      border-bottom: 1px solid var(--border-light);
-    }
-
-    .detail-header h2 {
-      margin: 0;
-      font-size: 1.2rem;
-    }
-
-    .detail-header button {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--text-secondary);
-      transition: color 0.2s;
-    }
-
-    .detail-header button:hover {
-      color: var(--text-primary);
-    }
-
-    .detail-body {
-      padding: 24px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .detail-item {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .detail-item.detail-full {
-      grid-column: 1 / -1;
-    }
-
-    .detail-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-    }
-
-    .detail-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .btn-save {
-      background: var(--accent-blue);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      flex: 1;
-    }
-
-    .btn-save:hover { background: #1d4ed8; }
-
-    .btn-secondary {
-      background: #6366f1;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 600;
-      font-family: inherit;
-      flex: 1;
-    }
-
-    .btn-secondary:hover { background: #4f46e5; }
-
-    .btn-danger {
-      background: #ef4444;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 600;
-      font-family: inherit;
-      flex: 1;
-    }
-
-    .btn-danger:hover { background: #dc2626; }
-
-    .btn-cancel-edit {
-      background: var(--bg-tertiary);
-      color: var(--text-secondary);
-      border: 1.5px solid var(--border-medium);
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      flex: 1;
-    }
-
-    .btn-cancel-edit:hover { background: var(--border-light); }
-
-    /* === TOAST === */
-    .toast {
-      position: fixed; bottom: 28px; left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: #1a1d26; color: white;
-      padding: 12px 24px; border-radius: 12px;
-      font-size: 0.88rem; font-weight: 600;
-      z-index: 300; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-      box-shadow: var(--shadow-xl);
-    }
-
-    .toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* === OVERLAY === */
-    .overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.25);
-      opacity: 0; visibility: hidden;
-      transition: all 0.3s ease; z-index: 85;
-    }
-
-    .overlay.visible { opacity: 1; visibility: visible; }
-
-    @media (max-width: 768px) {
-      .search-bar { display: none; }
-      .nav-tab span { display: none; }
-      .btn-new span { display: none; }
-      .btn-new { padding: 10px; }
-      .kanban-column { flex: 0 0 250px; }
-      .side-panel { width: 100%; right: -100%; }
-      .quick-actions { grid-template-columns: repeat(2, 1fr); }
-      #inter-detail-modal { max-width: 95vw; }
-    }
-  </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <!-- TOP NAVIGATION -->
-  <nav class="top-nav">
-    <div class="nav-left">
-      <div class="logo">
-        <div class="logo-icon">📊</div>
-        <span>CRM PUI</span>
-      </div>
-      <div class="nav-tabs">
-        <button class="nav-tab" data-view="dashboard">📈 <span>Dashboard</span></button>
-        <button class="nav-tab active" data-view="opportunites">🏆 <span>Opportunités</span></button>
-        <button class="nav-tab" data-view="contacts">👥 <span>Contacts</span></button>
-        <button class="nav-tab" data-view="entreprises">🏢 <span>Entreprises</span></button>
-        <button class="nav-tab" data-view="interactions">💬 <span>Interactions</span></button>
-        <button class="nav-tab" data-view="evenements">📅 <span>Évènements</span></button>
-      </div>
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="nav-logo">🎓</div>
+    <span class="nav-title">CRM PUI</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab" data-view="dashboard">📊 Dashboard</button>
+    <button class="nav-tab active" data-view="opportunites">🎯 Opportunités</button>
+    <button class="nav-tab" data-view="contacts">👤 Contacts</button>
+    <button class="nav-tab" data-view="entreprises">🏢 Entreprises</button>
+    <button class="nav-tab" data-view="interactions">💬 Interactions</button>
+    <button class="nav-tab" data-view="evenements">📅 Évènements</button>
+  </div>
+  <div class="nav-right">
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="Rechercher...">
     </div>
-    <div class="nav-right">
-      <div class="search-bar">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input type="text" id="search-input" placeholder="Rechercher...">
-      </div>
-      <button class="btn-new" id="btn-new">✨ <span>Nouvelle opportunité</span></button>
+    <button class="btn-primary" id="btn-new">✨ Nouvelle opportunité</button>
+  </div>
+</nav>
+
+<!-- VUES PLACEHOLDER -->
+<div class="placeholder-view" id="view-dashboard">📊 Dashboard — bientôt disponible</div>
+<div class="placeholder-view" id="view-contacts">👤 Contacts — bientôt disponible</div>
+<div class="placeholder-view" id="view-entreprises">🏢 Entreprises — bientôt disponible</div>
+<div class="placeholder-view" id="view-interactions">💬 Interactions — bientôt disponible</div>
+<div class="placeholder-view" id="view-evenements">📅 Évènements — bientôt disponible</div>
+
+<!-- KANBAN -->
+<div class="kanban-view" id="kanban-view">
+
+  <!-- COLONNES (générées une par statut) -->
+  <div class="kanban-col" data-statut="Prospect">
+    <div class="col-header">
+      <div class="col-title">🎯 Prospect</div>
+      <div class="col-count badge">0</div>
     </div>
-  </nav>
+    <div class="col-total">0 €</div>
+    <div class="cards-container"></div>
+    <button class="add-card-btn">+ Ajouter</button>
+  </div>
 
-  <!-- MAIN CONTENT -->
-  <main class="main-content">
-
-    <!-- KANBAN VIEW -->
-    <div class="kanban-container" id="kanban-view">
-
-      <div class="kanban-column" data-status="Prospect">
-        <div class="column-header">
-          <div class="column-title prospect"><div class="icon">🎯</div><span>Prospect</span></div>
-          <div class="column-header-right">
-            <span class="column-count" id="count-Prospect">0</span>
-            <span class="column-total" id="total-Prospect"></span>
-          </div>
-        </div>
-        <div class="column-cards" id="col-Prospect"></div>
-        <button class="add-card-btn" data-status="Prospect">➕ Ajouter</button>
-      </div>
-
-      <div class="kanban-column" data-status="En discussion">
-        <div class="column-header">
-          <div class="column-title discussion"><div class="icon">💬</div><span>En discussion</span></div>
-          <div class="column-header-right">
-            <span class="column-count" id="count-En discussion">0</span>
-            <span class="column-total" id="total-En discussion"></span>
-          </div>
-        </div>
-        <div class="column-cards" id="col-En discussion"></div>
-        <button class="add-card-btn" data-status="En discussion">➕ Ajouter</button>
-      </div>
-
-      <div class="kanban-column" data-status="Proposition">
-        <div class="column-header">
-          <div class="column-title proposition"><div class="icon">📄</div><span>Proposition</span></div>
-          <div class="column-header-right">
-            <span class="column-count" id="count-Proposition">0</span>
-            <span class="column-total" id="total-Proposition"></span>
-          </div>
-        </div>
-        <div class="column-cards" id="col-Proposition"></div>
-        <button class="add-card-btn" data-status="Proposition">➕ Ajouter</button>
-      </div>
-
-      <div class="kanban-column" data-status="Gagné">
-        <div class="column-header">
-          <div class="column-title gagne"><div class="icon">✅</div><span>Gagné</span></div>
-          <div class="column-header-right">
-            <span class="column-count" id="count-Gagné">0</span>
-            <span class="column-total" id="total-Gagné"></span>
-          </div>
-        </div>
-        <div class="column-cards" id="col-Gagné"></div>
-        <button class="add-card-btn" data-status="Gagné">➕ Ajouter</button>
-      </div>
-
-      <div class="kanban-column" data-status="Perdu">
-        <div class="column-header">
-          <div class="column-title perdu"><div class="icon">❌</div><span>Perdu</span></div>
-          <div class="column-header-right">
-            <span class="column-count" id="count-Perdu">0</span>
-            <span class="column-total" id="total-Perdu"></span>
-          </div>
-        </div>
-        <div class="column-cards" id="col-Perdu"></div>
-        <button class="add-card-btn" data-status="Perdu">➕ Ajouter</button>
-      </div>
-
+  <div class="kanban-col" data-statut="En discussion">
+    <div class="col-header">
+      <div class="col-title">💬 En discussion</div>
+      <div class="col-count badge">0</div>
     </div>
+    <div class="col-total">0 €</div>
+    <div class="cards-container"></div>
+    <button class="add-card-btn">+ Ajouter</button>
+  </div>
 
-    <!-- PLACEHOLDER VIEWS -->
-    <div class="placeholder-view" id="view-dashboard">
-      <div class="placeholder-icon">📈</div>
-      <div class="placeholder-title">Dashboard</div>
-      <div class="placeholder-subtitle">Statistiques & KPIs — bientôt disponible 🚧</div>
+  <div class="kanban-col" data-statut="Proposition">
+    <div class="col-header">
+      <div class="col-title">📄 Proposition</div>
+      <div class="col-count badge">0</div>
     </div>
+    <div class="col-total">0 €</div>
+    <div class="cards-container"></div>
+    <button class="add-card-btn">+ Ajouter</button>
+  </div>
 
-    <div class="placeholder-view" id="view-contacts">
-      <div class="placeholder-icon">👥</div>
-      <div class="placeholder-title">Annuaire des Contacts</div>
-      <div class="placeholder-subtitle">Vue en cours de développement 🚧</div>
+  <div class="kanban-col" data-statut="Gagné">
+    <div class="col-header">
+      <div class="col-title">✅ Gagné</div>
+      <div class="col-count badge">0</div>
     </div>
+    <div class="col-total">0 €</div>
+    <div class="cards-container"></div>
+    <button class="add-card-btn">+ Ajouter</button>
+  </div>
 
-    <div class="placeholder-view" id="view-entreprises">
-      <div class="placeholder-icon">🏢</div>
-      <div class="placeholder-title">Fiches Entreprises</div>
-      <div class="placeholder-subtitle">Vue en cours de développement 🚧</div>
+  <div class="kanban-col" data-statut="Perdu">
+    <div class="col-header">
+      <div class="col-title">❌ Perdu</div>
+      <div class="col-count badge">0</div>
     </div>
-
-    <div class="placeholder-view" id="view-interactions">
-      <div class="placeholder-icon">💬</div>
-      <div class="placeholder-title">Historique des Interactions</div>
-      <div class="placeholder-subtitle">Vue en cours de développement 🚧</div>
-    </div>
-
-    <div class="placeholder-view" id="view-evenements">
-      <div class="placeholder-icon">📅</div>
-      <div class="placeholder-title">Évènements & Agenda</div>
-      <div class="placeholder-subtitle">Vue en cours de développement 🚧</div>
-    </div>
-
-  </main>
-
-  <!-- OVERLAY -->
-  <div class="overlay" id="overlay"></div>
+    <div class="col-total">0 €</div>
+    <div class="cards-container"></div>
+    <button class="add-card-btn">+ Ajouter</button>
+  </div>
 
   <!-- SIDE PANEL -->
- <!-- SIDE PANEL -->
-<aside class="side-panel" id="side-panel">
-  <div class="side-panel-header">
-    <button class="close-panel" id="close-panel">✕</button>
-    <div class="panel-company" id="panel-company">—</div>
-    <div class="panel-contact" id="panel-contact">—</div>
-    <div class="panel-status" id="panel-status"></div>
-    <div class="panel-amount" id="panel-amount"></div>
-  </div>
+  <div class="overlay" id="overlay"></div>
+  <aside class="side-panel" id="side-panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-company" id="panel-company">—</div>
+        <div class="panel-status" id="panel-status"></div>
+        <div class="panel-amount" id="panel-amount"></div>
+      </div>
+      <button class="close-panel" id="close-panel">✕</button>
+    </div>
 
-  <div class="panel-section">
-    <div class="panel-section-title">Fiche opportunité</div>
-    <div class="detail-grid" id="panel-details"></div>
-  </div>
+    <!-- Formulaire édition -->
+    <div class="panel-scroll">
+      <div id="panel-form"></div>
 
-  <div class="panel-section">
-    <div class="panel-section-title">Actions rapides</div>
-    <div class="quick-actions">
-      <div class="quick-action phone" onclick="callContact()">
-        <div class="icon">📞</div><span>Appel</span>
+      <!-- Actions directes -->
+      <div class="panel-section">
+        <div class="panel-section-title">Actions directes</div>
+        <div id="panel-actions"></div>
       </div>
-      <div class="quick-action email" onclick="sendEmail()">
-        <div class="icon">📧</div><span>Email</span>
+
+      <!-- Logger interaction -->
+      <div class="panel-section">
+        <div class="panel-section-title">Logger une interaction</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn-log-type" onclick="openLogModal('Appel')">📞 Appel</button>
+          <button class="btn-log-type" onclick="openLogModal('Email')">📧 Email</button>
+          <button class="btn-log-type" onclick="openLogModal('Note')">📝 Note</button>
+          <button class="btn-log-type" onclick="openLogModal('Réunion')">📅 RDV</button>
+        </div>
       </div>
-      <div class="quick-action note" onclick="openQuickActionModal('Note')">
-        <div class="icon">📝</div><span>Note</span>
-      </div>
-      <div class="quick-action rdv" onclick="openQuickActionModal('Réunion')">
-        <div class="icon">📅</div><span>RDV</span>
-      </div>
-      <div class="quick-action contact" onclick="openAddContactToOpp()">
-        <div class="icon">👥</div><span>+ Contact</span>
+
+      <!-- Timeline -->
+      <div class="panel-section">
+        <div class="panel-section-title">Historique</div>
+        <div id="panel-timeline"></div>
       </div>
     </div>
+  </aside>
+</div>
+
+<!-- MODAL LOG INTERACTION -->
+<div class="modal-overlay" id="log-modal">
+  <div class="modal-box">
+    <div class="modal-title">Logger une interaction</div>
+    <div id="log-modal-body"></div>
   </div>
+</div>
 
-  <div class="panel-section">
-    <div class="panel-section-title">Dernières interactions</div>
-    <div class="timeline" id="panel-timeline"></div>
+<!-- MODAL DÉTAIL INTERACTION -->
+<div class="modal-overlay" id="inter-detail-overlay">
+  <div class="modal-box modal-large">
+    <div class="modal-title">Détail interaction</div>
+    <div id="inter-detail-body"></div>
   </div>
+</div>
 
-  <div class="panel-section">
-    <button class="btn-edit" id="btn-edit-fiche">✏️ Éditer la fiche complète</button>
-  </div>
-</aside>
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
-
-  <!-- MODAL DÉTAIL INTERACTION (EN DEHORS DU SIDE-PANEL) ✅ -->
-  <div id="inter-detail-overlay">
-    <div id="inter-detail-modal"></div>
-  </div>
-
-  <!-- MODAL QUICK ACTION -->
-  <div class="modal-overlay" id="modal-overlay">
-    <div class="modal">
-      <div class="modal-title" id="modal-title">📝 Ajouter une note</div>
-      <label for="modal-note">Contenu *</label>
-      <textarea id="modal-note" rows="4" placeholder="Décrivez l'interaction..."></textarea>
-      <label id="modal-duree-label" for="modal-duree" style="display: none;">Durée (minutes)</label>
-      <input type="number" id="modal-duree" min="0" value="30" style="display: none;">
-      <div class="modal-actions">
-        <button class="btn-cancel" id="modal-cancel">Annuler</button>
-        <button class="btn-confirm" id="modal-confirm">✅ Enregistrer</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- TOAST -->
-  <div class="toast" id="toast"></div>
-
-  <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
-  <script src="app.js"></script>
+<!-- SCRIPTS (ordre important) -->
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/kanban.js"></script>
+<script src="js/panel.js"></script>
+<script src="js/interactions.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
