@@ -105,3 +105,13 @@ function getContactNom(id) {
   if (!c) return '—';
   return c.nom_prenom || `${c.Prenom} ${c.Nom}`.trim();
 }
+async function loadInteractions() {
+  try {
+    allInteractions = await grist.docApi.fetchTable('Interactions');
+    console.log('✅ Interactions rechargées:', allInteractions.length);
+    return allInteractions;
+  } catch (err) {
+    console.error('❌ Erreur chargement interactions:', err);
+    return [];
+  }
+}
