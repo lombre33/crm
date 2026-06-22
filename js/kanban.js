@@ -1,4 +1,10 @@
 // ════════════════════════════════════════════════════════
+//  FILTRE KANBAN
+// ════════════════════════════════════════════════════════
+let filteredOpportunitesAssignee = null; // ID de l'assignee sélectionné
+let allAssignees = []; // Liste des assignees disponibles
+
+// ════════════════════════════════════════════════════════
 //  KANBAN — Render + Cards + Drag & Drop
 // ════════════════════════════════════════════════════════
 
