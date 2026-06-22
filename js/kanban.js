@@ -11,6 +11,13 @@ let allAssignees = []; // Liste des assignees disponibles
 function renderKanban() {
   console.log('🔄 Rendu Kanban — Opps:', allOpportunites.length);
 
+  // 🔑 APPLIQUER LE FILTRE ASSIGNEE
+  const oppsAffichees = filteredOpportunitesAssignee 
+    ? allOpportunites.filter(o => o.assignee_a === filteredOpportunitesAssignee)
+    : allOpportunites;
+
+  console.log(`📊 Filtre assignee: ${filteredOpportunitesAssignee || 'AUCUN'} → ${oppsAffichees.length} opps`);
+
   STATUTS.forEach(statut => {
     const col = document.querySelector(`.kanban-col[data-statut="${statut}"]`);
     if (!col) {
@@ -24,8 +31,8 @@ function renderKanban() {
       return;
     }
 
-    // Filtrer les opps par statut
-    const cards = allOpportunites.filter(o => o.statut === statut);
+    // Filtrer les opps par statut (en utilisant les opps filtrées)
+    const cards = oppsAffichees.filter(o => o.statut === statut);
     console.log(`📊 ${statut}: ${cards.length} opps`);
 
     // Total colonne
@@ -41,14 +48,11 @@ function renderKanban() {
     container.innerHTML = '';
 
     // Crée les cartes
-  // Crée les cartes
-cards.forEach(opp => {
-  // 🔑 IMPORTANT : enrichir AVANT de créer la carte
-  enrichOpp(opp);
-  const cardEl = createCard(opp);  // ← ✅ ICI
-  container.appendChild(cardEl);
-});
-
+    cards.forEach(opp => {
+      enrichOpp(opp);
+      const cardEl = createCard(opp);
+      container.appendChild(cardEl);
+    });
 
     // Message "vide" si aucune carte
     if (cards.length === 0) {
