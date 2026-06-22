@@ -409,24 +409,26 @@ function renderTimeline(opp) {
   const timelineEl = document.getElementById('panel-timeline');
   if (!timelineEl) return;
 
-  const interactions = allInteractions.filter(i => i.opportunite_id === opp.id);
+  // 🔑 FIX : utilise "Opportunite" au lieu de "opportunite_id"
+  const interactions = allInteractions.filter(i => i.Opportunite === opp.id);
 
   if (interactions.length === 0) {
     timelineEl.innerHTML = '<div class="timeline-empty">Aucune interaction pour le moment</div>';
     return;
   }
 
+  // 🔑 FIX : utilise "Date" au lieu de "date_creation"
   const timeline = interactions
-    .sort((a, b) => (b.date_creation || 0) - (a.date_creation || 0))
+    .sort((a, b) => (b.Date || 0) - (a.Date || 0))
     .map(inter => `
       <div class="timeline-item">
-        <div class="timeline-dot ${inter.type.toLowerCase()}">
-          ${{ 'Appel': '📞', 'Email': '📧', 'Réunion': '📅', 'Note': '📝' }[inter.type] || '•'}
+        <div class="timeline-dot ${inter.type_interaction?.toLowerCase()}">
+          ${{ 'Appel': '☎️', 'Email': '📧', 'Réunion': '🤝', 'Visite': '🚗', 'Devis': '📄', 'Contrat': '📋', 'Note': '📝', 'Autre': '📌' }[inter.type_interaction] || '📌'}
         </div>
         <div class="timeline-body">
           <div class="timeline-header">
-            <span class="timeline-type">${inter.type}</span>
-            <span class="timeline-date">${formatDatetime(inter.date_creation)}</span>
+            <span class="timeline-type">${inter.type_interaction}</span>
+            <span class="timeline-date">${formatDatetime(inter.Date)}</span>
           </div>
           <div class="timeline-content">${escHtml(inter.contenu)}</div>
         </div>
@@ -435,3 +437,4 @@ function renderTimeline(opp) {
 
   timelineEl.innerHTML = `<div class="timeline">${timeline}</div>`;
 }
+
