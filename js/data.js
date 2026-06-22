@@ -94,7 +94,7 @@ allVilles = villes.id.map((id, i) => ({
     });
 
     gristReady = true;
-    renderKanban();
+  //  renderKanban();
 
   } catch(e) {
     console.error('❌ Erreur chargement données:', e);
