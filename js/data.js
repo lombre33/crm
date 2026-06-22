@@ -96,6 +96,13 @@ function enrichOpp(opp) {
   opp._assigneeNom = assignee
     ? (assignee.nom_prenom || `${assignee.Prenom} ${assignee.Nom}`.trim())
     : '—';
+   // 🔍 DEBUG : Affiche les champs de l'opp
+  console.log(`📋 Opp ${opp.id}:`, {
+    titre: opp.titre,
+    valeur_estimee: opp.valeur_estimee,
+    montant: opp.montant,
+    valeur: opp.valeur,
+    // Affiche TOUS les champs pour voir ce qu'on a
 }
 
 function getContactNom(id) {
