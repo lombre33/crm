@@ -3,7 +3,7 @@
 // ════════════════════════════════════════════════════════
 
 // 🔑 Types d'interaction disponibles
-const INTERACTION_TYPES = [
+let INTERACTION_TYPES = [
   'Appel',
   'Email',
   'Réunion',
@@ -15,7 +15,7 @@ const INTERACTION_TYPES = [
 ];
 
 // 🔑 Icônes par type d'interaction
-const INTERACTION_ICONS = {
+let INTERACTION_ICONS = {
   'Appel': '☎️',
   'Email': '📧',
   'Réunion': '🤝',
