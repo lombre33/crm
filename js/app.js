@@ -68,38 +68,6 @@ function initEvents() {
     });
 }
 
-// ── Navigation Multi-pages ────────────────────────────
-function initNavigation() {
-  const navContainer = document.querySelector('.nav-tabs');
-  
-  if (!navContainer) {
-    console.warn('⚠️ .nav-tabs non trouvé');
-    return;
-  }
-  
-  navContainer.addEventListener('click', (e) => {
-    const tab = e.target.closest('.nav-tab');
-    if (!tab) return;
-    
-    e.preventDefault();
-    const view = tab.dataset.view;
-    
-    const pages = {
-      'opportunites': 'index.html',
-      'entreprises': 'enterprises.html',
-      'contacts': 'contacts.html',
-      'dashboard': 'dashboard.html',
-      'interactions': 'interactions.html',
-      'evenements': 'evenements.html'
-    };
-
-    const targetPage = pages[view];
-    if (targetPage) {
-      window.location.href = targetPage;
-    }
-  });
-}
-
 // ── Affichage Kanban ──────────────────────────────────
 function showKanban() {
   const kanban = document.getElementById('kanban-view');
