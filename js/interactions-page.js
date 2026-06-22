@@ -194,7 +194,9 @@ function applyInteractionFilters() {
   });
 
   // Trier : plus récent en premier
-  filteredInteractions.sort((a, b) => (b.Date || 0) - (a.Date || 0));
+  filteredInteractions.sort((a, b) => (a.Date || 0) - (b.Date || 0));
+
+
 
   renderInteractionsTimeline();
 }
