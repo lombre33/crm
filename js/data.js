@@ -103,6 +103,7 @@ function enrichOpp(opp) {
     montant: opp.montant,
     valeur: opp.valeur,
     // Affiche TOUS les champs pour voir ce qu'on a
+  });
 }
 
 function getContactNom(id) {
