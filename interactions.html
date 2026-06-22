@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRM PUI - Interactions</title>
+  <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── INTERACTIONS PAGE ─────────────────────────────────── */
+    .interactions-container {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── BARRE FILTRES ─────────────────────────────────────── */
+    .interactions-filters {
+      display: flex;
+      gap: 12px;
+      padding: 16px 20px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .filter-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      white-space: nowrap;
+    }
+
+    .filter-group select,
+    .filter-group input {
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 13px;
+      background: white;
+      color: #1e293b;
+      transition: all 0.15s;
+    }
+
+    .filter-group select:hover,
+    .filter-group input:hover {
+      border-color: #cbd5e1;
+    }
+
+    .filter-group select:focus,
+    .filter-group input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-reset-filters {
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+
+    .btn-reset-filters:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    /* ── TIMELINE CONTAINER ────────────────────────────────── */
+    .interactions-timeline {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: #f4f5f7;
+    }
+
+    .timeline-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #94a3b8;
+    }
+
+    .timeline-empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.6;
+    }
+
+    .timeline-empty-text {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* ── TIMELINE ITEM (refactorisé) ────────────────────────── */
+    .timeline-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .timeline-item:hover {
+      transform: translateX(4px);
+    }
+
+    .timeline-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .timeline-dot.call {
+      background: rgba(16, 185, 129, 0.15);
+      color: #059669;
+    }
+
+    .timeline-dot.email {
+      background: rgba(59, 130, 246, 0.15);
+      color: #2563eb;
+    }
+
+    .timeline-dot.meeting {
+      background: rgba(139, 92, 246, 0.15);
+      color: #7c3aed;
+    }
+
+    .timeline-dot.note {
+      background: rgba(245, 158, 11, 0.15);
+      color: #d97706;
+    }
+
+    .timeline-card {
+      flex: 1;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .timeline-item:hover .timeline-card {
+      border-color: #3b82f6;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    .timeline-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .timeline-card-type {
+      font-weight: 700;
+      font-size: 13px;
+      color: #1e293b;
+    }
+
+    .timeline-card-date {
+      font-size: 12px;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    .timeline-card-contact {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+
+    .timeline-card-content {
+      font-size: 13px;
+      color: #1e293b;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .timeline-card-footer {
+      display: flex;
+      gap: 8px;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .timeline-card-badge {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    /* ── SIDE PANEL (Interactions) ─────────────────────────── */
+    .interactions-panel {
+      position: fixed;
+      right: -400px;
+      top: 56px;
+      width: 400px;
+      height: calc(100vh - 56px);
+      background: white;
+      border-left: 1px solid #e2e8f0;
+      box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+      transition: right 0.3s ease;
+      overflow-y: auto;
+      z-index: 200;
+    }
+
+    .interactions-panel.open {
+      right: 0;
+    }
+
+    .panel-header {
+      padding: 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+    }
+
+    .panel-close {
+      font-size: 20px;
+      cursor: pointer;
+      color: #64748b;
+      transition: color 0.2s;
+    }
+
+    .panel-close:hover {
+      color: #1e293b;
+    }
+
+    .panel-body {
+      padding: 20px;
+    }
+
+    .panel-section {
+      margin-bottom: 24px;
+    }
+
+    .panel-section-title {
+      font-weight: 700;
+      font-size: 12px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .panel-info {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .panel-info-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .panel-info-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    .panel-info-value {
+      font-size: 13px;
+      color: #1e293b;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 8px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+      margin-top: 20px;
+    }
+
+    .btn-panel-edit,
+    .btn-panel-delete {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.15s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-panel-edit {
+      background: #eff6ff;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+    }
+
+    .btn-panel-edit:hover {
+      background: #dbeafe;
+      border-color: #93c5fd;
+    }
+
+    .btn-panel-delete {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    .btn-panel-delete:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     NAVBAR
+     ════════════════════════════════════════════════════════ -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="nav-logo">🎓</div>
+    <span class="nav-title">CRM PUI</span>
+  </div>
+  <div class="nav-tabs">
+    <a href="dashboard.html" class="nav-tab">📊 Dashboard</a>
+    <a href="index.html" class="nav-tab">🎯 Opportunités</a>
+    <a href="contacts.html" class="nav-tab">👤 Contacts</a>
+    <a href="enterprises.html" class="nav-tab">🏢 Entreprises</a>
+    <a href="interactions.html" class="nav-tab active">💬 Interactions</a>
+    <a href="evenements.html" class="nav-tab">📅 Évènements</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn-primary" id="btn-new-interaction">✨ Nouvelle interaction</button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════
+     INTERACTIONS CONTAINER
+     ════════════════════════════════════════════════════════ -->
+<div class="interactions-container">
+
+  <!-- FILTRES -->
+  <div class="interactions-filters">
+    <div class="filter-group">
+      <label for="filter-type">Type :</label>
+      <select id="filter-type">
+        <option value="">Tous</option>
+        <option value="Appel">📞 Appel</option>
+        <option value="Email">📧 Email</option>
+        <option value="Réunion">🤝 Réunion</option>
+        <option value="Note">📝 Note</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="filter-contact">Personne :</label>
+      <select id="filter-contact">
+        <option value="">Tous</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="filter-entreprise">Entreprise :</label>
+      <select id="filter-entreprise">
+        <option value="">Tous</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="filter-assignee">Assigné à :</label>
+      <select id="filter-assignee">
+        <option value="">Tous</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="filter-date">Date :</label>
+      <input type="date" id="filter-date">
+    </div>
+
+    <button class="btn-reset-filters" onclick="resetInteractionFilters()">🔄 Réinitialiser</button>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="interactions-timeline" id="interactions-timeline">
+    <div class="timeline-empty">
+      <div class="timeline-empty-icon">💬</div>
+      <div class="timeline-empty-text">Chargement des interactions...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SIDE PANEL
+     ════════════════════════════════════════════════════════ -->
+<div class="interactions-panel" id="interactions-panel">
+  <div class="panel-header">
+    <div class="panel-title" id="panel-title">Interaction</div>
+    <div class="panel-close" onclick="closeInteractionsPanel()">✕</div>
+  </div>
+  <div class="panel-body" id="panel-body">
+    <!-- Contenu généré dynamiquement -->
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     MODAL : DÉTAIL INTERACTION (édition)
+     ════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="interaction-edit-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Modifier l'interaction</div>
+      <button class="modal-close" onclick="closeInteractionEditModal()">✕</button>
+    </div>
+    <div id="interaction-edit-body"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     TOAST
+     ════════════════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     SCRIPTS
+     ════════════════════════════════════════════════════════ -->
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/interactions-page.js"></script>
+
+</body>
+</html>
