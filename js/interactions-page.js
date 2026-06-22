@@ -654,4 +654,60 @@ function initInteractionsPageEvents() {
 
   console.log('✅ Events initialisés');
 }
+// ════════════════════════════════════════════════════════
+//  HELPERS — Utilitaires
+// ════════════════════════════════════════════════════════
+
+/**
+ * Formate une date timestamp en chaîne lisible
+ * @param {number} timestamp - Secondes depuis epoch
+ * @returns {string}
+ */
+function formatDatetime(timestamp) {
+  if (!timestamp) return '—';
+  const date = new Date(timestamp * 1000);
+  if (isNaN(date)) return '—';
+  
+  return date.toLocaleDateString('fr-FR', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+/**
+ * Formate une date timestamp en YYYY-MM-DD
+ * @param {number} timestamp - Secondes depuis epoch
+ * @returns {string}
+ */
+function formatDate(timestamp) {
+  if (!timestamp) return '';
+  const date = new Date(timestamp * 1000);
+  if (isNaN(date)) return '';
+  
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Affiche un toast notification
+ * @param {string} message - Le message à afficher
+ * @param {number} duration - Durée en ms (default 3000)
+ */
+function showToast(message, duration = 3000) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  
+  toast.textContent = message;
+  toast.classList.add('show');
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, duration);
+}
 
