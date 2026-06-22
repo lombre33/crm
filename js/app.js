@@ -6,7 +6,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   initApp();
   initEvents();
-  initNavigation();
+// initNavigation();
   
   // Affiche le kanban par défaut (vue Opportunités active)
   // ⚠️ Seulement si on est sur index.html
@@ -70,7 +70,7 @@ function initEvents() {
 }
 
 // ── Navigation Multi-pages ────────────────────────────
-function initNavigation() {
+/*function initNavigation() {
   const navContainer = document.querySelector('.nav-tabs');
   
   if (!navContainer) {
@@ -115,7 +115,7 @@ function hideKanban() {
   if (kanban) {
     kanban.classList.remove('active');
   }
-}
+}*/
 
 // ════════════════════════════════════════════════════════
 //  UTILITAIRES
