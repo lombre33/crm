@@ -67,6 +67,14 @@ cards.forEach(opp => {
 // ════════════════════════════════════════════════════════
 //  CRÉER UNE CARTE
 // ════════════════════════════════════════════════════════
+
+// DEBUUUUUUUUUUUUUUUUUG
+console.log(`🔍 DEBUG createCard - Opp ${opp.id}:`, {
+  valeur_estimee: opp.valeur_estimee,
+  valeur_estilmee: opp.valeur_estilmee, // ← ⚠️ C'est peut-être ça !
+  allFields: opp
+});
+
 function createCard(opp) {
   const card = document.createElement('div');
   card.className = 'kanban-card';
