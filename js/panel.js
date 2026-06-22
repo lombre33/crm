@@ -33,10 +33,15 @@ function closePanel() {
 // ════════════════════════════════════════════════════════
 function renderPanelHeader(opp) {
   const companyEl = document.getElementById('panel-company');
+  const contactEl = document.getElementById('panel-contact');
   const statusEl = document.getElementById('panel-status');
   const amountEl = document.getElementById('panel-amount');
 
-  if (companyEl) companyEl.textContent = opp.entreprise_nom || '—';
+  // 🔑 Utiliser _entrepriseNom avec underscore
+  if (companyEl) companyEl.textContent = opp._entrepriseNom || '—';
+  
+  // 🔑 Ajouter le contact aussi dans le header
+  if (contactEl) contactEl.textContent = '👤 ' + (opp._contactNom || '—');
   
   if (statusEl) {
     statusEl.textContent = opp.statut || '—';
@@ -47,6 +52,7 @@ function renderPanelHeader(opp) {
   if (amountEl) amountEl.textContent = formatEuros(opp.valeur_estimee || 0);
 }
 
+
 // ════════════════════════════════════════════════════════
 //  DÉTAILS & FORMULAIRE
 // ════════════════════════════════════════════════════════
@@ -54,10 +60,11 @@ function renderPanelDetails(opp) {
   const detailsEl = document.getElementById('panel-details');
   if (!detailsEl) return;
 
-  // Infos principales
-  const contact = allContacts.find(c => c.id === opp.contact_principale);
-  const entreprise = allEntreprises.find(e => e.id === opp.Entreprise);
+  // 🔑 Utiliser les valeurs enrichies avec underscore
+  const entrepriseNom = opp._entrepriseNom || '—';
+  const contactNom = opp._contactNom || '—';
   const assignee = allContacts.find(c => c.id === opp.assignee_a);
+  const assigneeNom = assignee?.nom_prenom || `${assignee?.Prenom} ${assignee?.Nom}`.trim() || '—';
 
   const closingDate = opp.date_closing_estimee
     ? formatDate(opp.date_closing_estimee)
@@ -69,11 +76,11 @@ function renderPanelDetails(opp) {
       <div class="panel-info-grid">
         <div class="panel-info-item">
           <div class="panel-info-label">Entreprise</div>
-          <div class="panel-info-value">${escHtml(entreprise?.Nom || '—')}</div>
+          <div class="panel-info-value">${escHtml(entrepriseNom)}</div>
         </div>
         <div class="panel-info-item">
           <div class="panel-info-label">Contact</div>
-          <div class="panel-info-value">${escHtml(contact?.nom_prenom || '—')}</div>
+          <div class="panel-info-value">${escHtml(contactNom)}</div>
         </div>
         <div class="panel-info-item">
           <div class="panel-info-label">Priorité</div>
@@ -81,7 +88,7 @@ function renderPanelDetails(opp) {
         </div>
         <div class="panel-info-item">
           <div class="panel-info-label">Assigné</div>
-          <div class="panel-info-value">${escHtml(assignee?.nom_prenom || '—')}</div>
+          <div class="panel-info-value">${escHtml(assigneeNom)}</div>
         </div>
         <div class="panel-info-item">
           <div class="panel-info-label">Closing</div>
@@ -89,6 +96,9 @@ function renderPanelDetails(opp) {
         </div>
       </div>
     </div>
+    
+
+
 
     <div class="panel-section">
       <div class="panel-section-title">📝 DESCRIPTION</div>
