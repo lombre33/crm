@@ -269,27 +269,27 @@ button {
   border: 1px solid transparent;
 }
 
-.kanban-col[data-status="Prospect"] {
+.kanban-col[data-statut="Prospect"] {
   background: rgba(59, 130, 246, 0.06);
   border-color: rgba(59, 130, 246, 0.15);
 }
 
-.kanban-col[data-status="En discussion"] {
+.kanban-col[data-statut="En discussion"] {
   background: rgba(139, 92, 246, 0.06);
   border-color: rgba(139, 92, 246, 0.15);
 }
 
-.kanban-col[data-status="Proposition envoyee"] {
+.kanban-col[data-statut="Proposition envoyee"] {
   background: rgba(245, 158, 11, 0.06);
   border-color: rgba(245, 158, 11, 0.15);
 }
 
-.kanban-col[data-status="Gagne"] {
+.kanban-col[data-statut="Gagne"] {
   background: rgba(16, 185, 129, 0.06);
   border-color: rgba(16, 185, 129, 0.15);
 }
 
-.kanban-col[data-status="Perdu"] {
+.kanban-col[data-statut="Perdu"] {
   background: rgba(239, 68, 68, 0.06);
   border-color: rgba(239, 68, 68, 0.15);
 }
@@ -323,27 +323,27 @@ button {
   color: #475569;
 }
 
-.kanban-col[data-status="Prospect"] .col-count {
+.kanban-col[data-statut="Prospect"] .col-count {
   background: rgba(59,130,246,0.15);
   color: #2563eb;
 }
 
-.kanban-col[data-status="En discussion"] .col-count {
+.kanban-col[data-statut="En discussion"] .col-count {
   background: rgba(139,92,246,0.15);
   color: #7c3aed;
 }
 
-.kanban-col[data-status="Proposition envoyee"] .col-count {
+.kanban-col[data-statut="Proposition envoyee"] .col-count {
   background: rgba(245,158,11,0.15);
   color: #d97706;
 }
 
-.kanban-col[data-status="Gagne"] .col-count {
+.kanban-col[data-statut="Gagne"] .col-count {
   background: rgba(16,185,129,0.15);
   color: #059669;
 }
 
-.kanban-col[data-status="Perdu"] .col-count {
+.kanban-col[data-statut="Perdu"] .col-count {
   background: rgba(239,68,68,0.15);
   color: #dc2626;
 }
