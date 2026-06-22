@@ -6,6 +6,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   initApp();
   initEvents();
+  initNavigation();
   // Affiche le kanban par défaut (vue Opportunités active)
   showKanban();
 });
@@ -31,25 +32,6 @@ function initEvents() {
   document.getElementById('btn-new')
     ?.addEventListener('click', () => showToast('🚧 Bientôt disponible !'));
 
-  // Onglets navigation
-  document.querySelectorAll('.nav-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      
-      const view = tab.dataset.view;
-      closePanel();
-      
-      if (view === 'opportunites') {
-        showKanban();
-      } else {
-        hideKanban();
-        document.querySelectorAll('.placeholder-view').forEach(pv => pv.classList.remove('active'));
-        document.getElementById('view-' + view)?.classList.add('active');
-      }
-    });
-  });
-
   // Fermeture modaux
   document.getElementById('log-modal')
     ?.addEventListener('click', e => {
@@ -62,6 +44,30 @@ function initEvents() {
       if (e.target === document.getElementById('inter-detail-overlay'))
         document.getElementById('inter-detail-overlay').classList.remove('open');
     });
+}
+
+// ── Navigation Multi-pages ────────────────────────────
+function initNavigation() {
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', (e) => {
+      e.preventDefault();
+      const view = tab.dataset.view;
+      
+      const pages = {
+        'opportunites': 'index.html',
+        'entreprises': 'enterprises.html',
+        'contacts': 'contacts.html',
+        'dashboard': 'dashboard.html',
+        'interactions': 'interactions.html',
+        'evenements': 'evenements.html'
+      };
+
+      const targetPage = pages[view];
+      if (targetPage) {
+        window.location.href = targetPage;
+      }
+    });
+  });
 }
 
 // ── Affichage Kanban ──────────────────────────────────
@@ -124,15 +130,9 @@ function showToast(msg) {
 async function initApp() {
   try {
     await loadAllData();      // ← Charge les données
-    initFilterAssignee();     // ← 🆕 Initialise le dropdown
+    initFilterAssignee();     // ← Initialise le dropdown
     renderKanban();           // ← Affiche le kanban
   } catch (err) {
     console.error('❌ Erreur chargement données:', err);
   }
 }
-document.querySelector('[data-view="entreprises"]')
-  ?.addEventListener('click', (e) => {
-    e.preventDefault();
-    window.location.href = 'enterprises.html';
-  });
-
