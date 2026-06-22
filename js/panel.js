@@ -416,7 +416,7 @@ async function deleteOpp(opp) {
 // ════════════════════════════════════════════════════════
 //  TIMELINE (placeholder)
 // ════════════════════════════════════════════════════════
-ffunction renderTimeline(opp) {
+function renderTimeline(opp) {
   const timelineEl = document.getElementById('panel-timeline');
   if (!timelineEl) return;
 
