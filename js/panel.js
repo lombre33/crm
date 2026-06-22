@@ -416,7 +416,7 @@ async function deleteOpp(opp) {
 // ════════════════════════════════════════════════════════
 //  TIMELINE (placeholder)
 // ════════════════════════════════════════════════════════
-function renderTimeline(opp) {
+ffunction renderTimeline(opp) {
   const timelineEl = document.getElementById('panel-timeline');
   if (!timelineEl) return;
 
@@ -451,7 +451,7 @@ function renderTimeline(opp) {
     item.style.cursor = 'pointer';
     item.addEventListener('click', (e) => {
       e.stopPropagation();
-      const interId = parseInt(item.dataset.interId);
+      const interId = parseInt(item.dataset.interId); // ✅ Correction ici
       const interaction = allInteractions.find(i => i.id === interId);
       if (interaction) {
         console.log('🖱️ Clic interaction:', interId);
