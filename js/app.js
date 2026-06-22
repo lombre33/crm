@@ -124,6 +124,7 @@ function showToast(msg) {
 async function initApp() {
   try {
     await loadAllData();  // ← Appelle data.js
+    initFilterAssignee();
     renderKanban();
   } catch (err) {
     console.error('❌ Erreur chargement données:', err);
