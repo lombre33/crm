@@ -120,3 +120,15 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
+
+async function loadAllData() {
+  try {
+    await loadOpportunities();
+    await loadContacts();
+    await loadInteractions();  // ← Ajout
+    renderKanban();
+  } catch (err) {
+    console.error('❌ Erreur chargement données:', err);
+  }
+}
+
