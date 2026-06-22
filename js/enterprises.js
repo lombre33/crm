@@ -8,6 +8,59 @@ let currentEnterprise = null;
 let filteredEnterprises = [];
 
 // ════════════════════════════════════════════════════════
+//  COMPLETION CALCULATOR
+// ════════════════════════════════════════════════════════
+
+// Champs requis et optionnels
+const COMPLETION_CONFIG = {
+  required: ['Nom', 'Secteur', 'Ville'], // = 100%
+  optional: ['site_web_', 'Adresse_1', 'CP', 'Contact_principale', 'Siret'] // bonus
+};
+
+function calculateCompletion(ent) {
+  // Vérifier champs requis
+  const requiredFilled = COMPLETION_CONFIG.required.filter(field => 
+    ent[field] && String(ent[field]).trim()
+  ).length;
+  
+  // Vérifier champs optionnels
+  const optionalFilled = COMPLETION_CONFIG.optional.filter(field => 
+    ent[field] && String(ent[field]).trim()
+  ).length;
+  
+  // Calcul : 70% requis + 30% optionnels
+  const requiredPercent = (requiredFilled / COMPLETION_CONFIG.required.length) * 70;
+  const optionalPercent = (optionalFilled / COMPLETION_CONFIG.optional.length) * 30;
+  
+  return Math.round(requiredPercent + optionalPercent);
+}
+
+function getGradientStops(completion) {
+  // Gradient dynamique selon la complétude
+  let startColor = '#ff6b6b'; // Rouge
+  let endColor = '#ff6b6b';
+  
+  if (completion >= 80) {
+    startColor = '#6bcf7f';
+    endColor = '#4cbf63';
+  } else if (completion >= 60) {
+    startColor = '#ffd93d';
+    endColor = '#6bcf7f';
+  } else if (completion >= 40) {
+    startColor = '#ffa07a';
+    endColor = '#ffd93d';
+  } else {
+    startColor = '#ff6b6b';
+    endColor = '#ffa07a';
+  }
+  
+  return `
+    <stop offset="0%" style="stop-color:${startColor};stop-opacity:1" />
+    <stop offset="100%" style="stop-color:${endColor};stop-opacity:1" />
+  `;
+}
+
+// ════════════════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
@@ -78,6 +131,7 @@ function initFilters() {
   document.getElementById('filter-secteur')?.addEventListener('change', applyFilters);
   document.getElementById('filter-ville')?.addEventListener('change', applyFilters);
   document.getElementById('filter-taille')?.addEventListener('change', applyFilters);
+  document.getElementById('filter-completion')?.addEventListener('change', applyFilters); // 🆕
 }
 
 
@@ -86,14 +140,24 @@ function applyFilters() {
   const secteur = document.getElementById('filter-secteur')?.value || '';
   const ville = document.getElementById('filter-ville')?.value || '';
   const taille = document.getElementById('filter-taille')?.value || '';
+  const completion = document.getElementById('filter-completion')?.value || ''; // 🆕
 
   filteredEnterprises = allEntreprises.filter(ent => {
     const matchSearch = !search || ent.Nom.toLowerCase().includes(search);
     const matchSecteur = !secteur || ent.Secteur === parseInt(secteur);
     const matchVille = !ville || ent.Ville === parseInt(ville);
     const matchTaille = !taille || ent.taille === taille;
+    
+    // 🆕 FILTER COMPLETION
+    let matchCompletion = true;
+    if (completion) {
+      const comp = calculateCompletion(ent);
+      if (completion === 'high') matchCompletion = comp >= 67;
+      else if (completion === 'medium') matchCompletion = comp >= 34 && comp < 67;
+      else if (completion === 'low') matchCompletion = comp < 34;
+    }
 
-    return matchSearch && matchSecteur && matchVille && matchTaille;
+    return matchSearch && matchSecteur && matchVille && matchTaille && matchCompletion;
   });
 
   renderEnterprisesGrid();
@@ -119,10 +183,31 @@ function renderEnterprisesGrid() {
   grid.innerHTML = filteredEnterprises.map(ent => {
     const secteur = allSecteurs?.find(s => s.id === ent.Secteur);
     const ville = allVilles?.find(v => v.id === ent.Ville);
+    
+    // 🆕 CALCULER LE COMPLETION
+    const completion = calculateCompletion(ent);
 
     return `
       <div class="enterprise-card" data-ent-id="${ent.id}">
-        <div class="enterprise-card-title">${escHtml(ent.Nom)}</div>
+        
+        <!-- 🆕 HEADER AVEC CERCLE -->
+        <div class="enterprise-card-header">
+          <div class="enterprise-card-title">${escHtml(ent.Nom)}</div>
+          <div class="completion-ring" data-completion="${completion}">
+            <svg viewBox="0 0 36 36">
+              <defs>
+                <linearGradient id="gradient-${ent.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                  ${getGradientStops(completion)}
+                </linearGradient>
+              </defs>
+              <circle cx="18" cy="18" r="15.915" class="circle-bg"></circle>
+              <circle cx="18" cy="18" r="15.915" class="circle-progress" style="stroke: url(#gradient-${ent.id})"></circle>
+            </svg>
+            <span class="completion-text">${completion}%</span>
+          </div>
+        </div>
+
+        <!-- CONTENU CARD -->
         <div class="enterprise-card-info">
           🏷️ ${escHtml(secteur?.nom || '—')}
         </div>
