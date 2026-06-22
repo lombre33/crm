@@ -69,6 +69,7 @@ allVilles = villes.id.map((id, i) => ({
 
     // 🔥 Extraction propre des interactions
     _parseInteractions(interactions);
+    enrichAllInteractions();
 
     allOpportunites = opps.id.map((id, i) => ({
       id,
@@ -174,4 +175,28 @@ function getContactNom(id) {
   const c = allContacts.find(c => c.id === id);
   if (!c) return '—';
   return c.nom_prenom || `${c.Prenom} ${c.Nom}`.trim();
+}
+
+// ════════════════════════════════════════════════════════
+//  ENRICHIR LES INTERACTIONS (après chargement)
+// ════════════════════════════════════════════════════════
+function enrichAllInteractions() {
+  allInteractions.forEach(inter => {
+    // ✅ Contact
+    const contact = allContacts.find(c => c.id === inter.contact);
+    inter._contactNom = contact
+      ? (contact.nom_prenom || `${contact.Prenom} ${contact.Nom}`.trim())
+      : '—';
+
+    // ✅ Assignee
+    const assignee = allContacts.find(c => c.id === inter.Assigne);
+    inter._assigneeNom = assignee
+      ? (assignee.nom_prenom || `${assignee.Prenom} ${assignee.Nom}`.trim())
+      : '—';
+
+    // ✅ Opportunité (et son entreprise)
+    const opp = allOpportunites.find(o => o.id === inter.Opportunite);
+    inter._opportuniteTitre = opp?.titre || '—';
+    inter._entrepriseNom = opp?._entrepriseNom || '—';
+  });
 }
