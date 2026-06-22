@@ -40,7 +40,38 @@
 <div class="placeholder-view" id="view-evenements">📅 Évènements — bientôt disponible</div>
 
 <!-- KANBAN -->
-<div class="kanban-view" id="kanban-view">
+
+
+    <!-- Formulaire édition -->
+    <div class="panel-scroll">
+      <div id="panel-form"></div>
+
+      <!-- Actions directes -->
+      <div class="panel-section">
+        <div class="panel-section-title">Actions directes</div>
+        <div id="panel-actions"></div>
+      </div>
+
+      <!-- Logger interaction -->
+      <div class="panel-section">
+        <div class="panel-section-title">Logger une interaction</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn-log-type" onclick="openLogModal('Appel')">📞 Appel</button>
+          <button class="btn-log-type" onclick="openLogModal('Email')">📧 Email</button>
+          <button class="btn-log-type" onclick="openLogModal('Note')">📝 Note</button>
+          <button class="btn-log-type" onclick="openLogModal('Réunion')">📅 RDV</button>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="panel-section">
+        <div class="panel-section-title">Historique</div>
+        <div id="panel-timeline"></div>
+      </div>
+    </div>
+  </aside>
+</div>
+  <div class="kanban-view" id="kanban-view">
 
   <!-- COLONNES (générées une par statut) -->
   <div class="kanban-col" data-statut="Prospect">
@@ -104,36 +135,6 @@
       </div>
       <button class="close-panel" id="close-panel">✕</button>
     </div>
-
-    <!-- Formulaire édition -->
-    <div class="panel-scroll">
-      <div id="panel-form"></div>
-
-      <!-- Actions directes -->
-      <div class="panel-section">
-        <div class="panel-section-title">Actions directes</div>
-        <div id="panel-actions"></div>
-      </div>
-
-      <!-- Logger interaction -->
-      <div class="panel-section">
-        <div class="panel-section-title">Logger une interaction</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn-log-type" onclick="openLogModal('Appel')">📞 Appel</button>
-          <button class="btn-log-type" onclick="openLogModal('Email')">📧 Email</button>
-          <button class="btn-log-type" onclick="openLogModal('Note')">📝 Note</button>
-          <button class="btn-log-type" onclick="openLogModal('Réunion')">📅 RDV</button>
-        </div>
-      </div>
-
-      <!-- Timeline -->
-      <div class="panel-section">
-        <div class="panel-section-title">Historique</div>
-        <div id="panel-timeline"></div>
-      </div>
-    </div>
-  </aside>
-</div>
 
 <!-- MODAL LOG INTERACTION -->
 <div class="modal-overlay" id="log-modal">
