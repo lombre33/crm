@@ -3,10 +3,10 @@
 // ════════════════════════════════════════════════════════
 
 // ── Init ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  initApp();
+document.addEventListener('DOMContentLoaded', async () => {
+  await initApp();
   initEvents();
-  initNavigation();
+  initNavigation();  // ← Garder là, c'est bon
   
   // Affiche le kanban par défaut (vue Opportunités active)
   // ⚠️ Seulement si on est sur index.html
@@ -33,6 +33,7 @@ async function initApp() {
     console.error('❌ Erreur chargement données:', err);
   }
 }
+
 
 // ── Events UI ─────────────────────────────────────────
 function initEvents() {
