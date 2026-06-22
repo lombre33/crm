@@ -89,8 +89,8 @@ allVilles = villes.id.map((id, i) => ({
       contacts: allContacts.length,
       entreprises: allEntreprises.length,
       interactions: allInteractions.length,
-      secteurs: window.allSecteurs.length,
-      villes: window.allVilles.length,
+      secteurs: allSecteurs.length,
+      villes: allVilles.length,
     });
 
     gristReady = true;
