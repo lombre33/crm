@@ -110,32 +110,37 @@ async function loadInteractions() {
 //  HELPERS
 // ════════════════════════════════════════════════════════
 function enrichOpp(opp) {
+  // ✅ Entreprise
   const ent = allEntreprises.find(e => e.id === opp.Entreprise);
   opp._entrepriseNom = ent?.Nom || '—';
 
+  // ✅ Contact principal
   const contact = allContacts.find(c => c.id === opp.contact_principale);
   opp._contactNom = contact
     ? (contact.nom_prenom || `${contact.Prenom} ${contact.Nom}`.trim())
     : '—';
 
-  const assignee = allContacts.find(c => c.id === opp.assignee_a);
-  opp._assigneeNom = assignee
-    ? (assignee.nom_prenom || `${assignee.Prenom} ${assignee.Nom}`.trim())
-    : '—';
-  
-  console.log(`📋 Opp ${opp.id}:`, opp);
-    // 🆕 INITIALES ASSIGNEE
+  // ✅ ASSIGNEE — Nettoyé
   if (opp.assignee_a) {
-    // Chercher dans allData.Annuaire
-    const assignee = allData.Annuaire?.find(a => a.id === opp.assignee_a);
+    const assignee = allContacts.find(c => c.id === opp.assignee_a);
+    
     if (assignee) {
-      const prenom = assignee.Prenom?.charAt(0) || '';
-      const nom = assignee.Nom?.charAt(0) || '';
-      opp._assigneeNom = `${assignee.Prenom} ${assignee.Nom}`;
-      opp._assigneeInitiales = `${prenom}${nom}`.toUpperCase();
+      opp._assigneeNom = assignee.nom_prenom || `${assignee.Prenom} ${assignee.Nom}`.trim();
+      
+      // 🆕 INITIALES
+      const prenom = (assignee.Prenom || '').charAt(0).toUpperCase();
+      const nom = (assignee.Nom || '').charAt(0).toUpperCase();
+      opp._assigneeInitiales = `${prenom}${nom}`;
+    } else {
+      opp._assigneeNom = '—';
+      opp._assigneeInitiales = '';
     }
+  } else {
+    opp._assigneeNom = '—';
+    opp._assigneeInitiales = '';
   }
 }
+
 
 function getContactNom(id) {
   const c = allContacts.find(c => c.id === id);
