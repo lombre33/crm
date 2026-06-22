@@ -7,7 +7,6 @@
   <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/interactions-page.css">
   <style>
     /* ── INTERACTIONS PAGE ─────────────────────────────────── */
     .interactions-container {
@@ -89,9 +88,138 @@
       background: #f4f5f7;
     }
 
+    /* ════════════════════════════════════════════════════════
+       INTERACTIONS PAGE — Styles Timeline (Compacté)
+       ════════════════════════════════════════════════════════ */
+
+    /* ── TIMELINE ITEM (Layout horizontal compact) ────────────── */
+    .timeline-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #3b82f6;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .timeline-item:hover {
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+      border-left-color: #2563eb;
+    }
+
+    /* ── TIMELINE DOT (Emoji icon) ────────────────────────────── */
+    .timeline-dot {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      background: #f1f5f9;
+    }
+
+    /* ── TIMELINE CONTENT (Infos compactées) ──────────────────── */
+    .timeline-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* ── TYPE + DATE (Une ligne) ──────────────────────────────── */
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .timeline-type-badge {
+      font-weight: 700;
+      font-size: 13px;
+      color: #1e293b;
+      padding: 2px 8px;
+      background: #f1f5f9;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .timeline-date {
+      font-size: 12px;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    /* ── INFOS COMPACTÉES (3 infos max) ───────────────────────── */
+    .timeline-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 12px;
+    }
+
+    .timeline-meta-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      color: #64748b;
+      line-height: 1.3;
+    }
+
+    .timeline-meta-row strong {
+      color: #1e293b;
+      font-weight: 600;
+      min-width: 80px;
+    }
+
+    .timeline-meta-row span {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── CONTENU (optionnel, masqué par défaut) ──────────────── */
+    .timeline-content-text {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.4;
+      display: none;
+      margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .timeline-item:hover .timeline-content-text {
+      display: block;
+    }
+
+    /* ── BOUTONS DETAILS (Icône) ────────────────────────────────── */
+    .timeline-btn-details {
+      background: none;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+      padding: 2px 6px;
+    }
+
+    .timeline-btn-details:hover {
+      opacity: 1;
+    }
+
+    /* ── TIMELINE EMPTY (Message vide) ────────────────────────── */
     .timeline-empty {
       text-align: center;
-      padding: 40px 20px;
+      padding: 60px 20px;
       color: #94a3b8;
     }
 
@@ -103,116 +231,6 @@
 
     .timeline-empty-text {
       font-size: 14px;
-      font-weight: 600;
-    }
-
-    /* ── TIMELINE ITEM (refactorisé) ────────────────────────── */
-    .timeline-item {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .timeline-item:hover {
-      transform: translateX(4px);
-    }
-
-    .timeline-dot {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .timeline-dot.call {
-      background: rgba(16, 185, 129, 0.15);
-      color: #059669;
-    }
-
-    .timeline-dot.email {
-      background: rgba(59, 130, 246, 0.15);
-      color: #2563eb;
-    }
-
-    .timeline-dot.meeting {
-      background: rgba(139, 92, 246, 0.15);
-      color: #7c3aed;
-    }
-
-    .timeline-dot.note {
-      background: rgba(245, 158, 11, 0.15);
-      color: #d97706;
-    }
-
-    .timeline-card {
-      flex: 1;
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 12px;
-      transition: all 0.2s;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-    }
-
-    .timeline-item:hover .timeline-card {
-      border-color: #3b82f6;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-    }
-
-    .timeline-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 8px;
-    }
-
-    .timeline-card-type {
-      font-weight: 700;
-      font-size: 13px;
-      color: #1e293b;
-    }
-
-    .timeline-card-date {
-      font-size: 12px;
-      color: #94a3b8;
-      white-space: nowrap;
-    }
-
-    .timeline-card-contact {
-      font-size: 12px;
-      color: #64748b;
-      margin-bottom: 4px;
-    }
-
-    .timeline-card-content {
-      font-size: 13px;
-      color: #1e293b;
-      line-height: 1.4;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      margin-bottom: 8px;
-    }
-
-    .timeline-card-footer {
-      display: flex;
-      gap: 8px;
-      font-size: 11px;
-      color: #94a3b8;
-    }
-
-    .timeline-card-badge {
-      background: #f1f5f9;
-      padding: 2px 6px;
-      border-radius: 4px;
       font-weight: 600;
     }
 
@@ -488,6 +506,22 @@
       background: #e2e8f0;
       color: #1e293b;
     }
+
+    /* ── OVERLAY ────────────────────────────────────────────── */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      display: none;
+      z-index: 199;
+    }
+
+    .overlay.open {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -572,7 +606,7 @@
 <div class="interactions-panel" id="interactions-panel">
   <div class="panel-header">
     <div class="panel-title" id="panel-title">Interaction</div>
-    <button class="panel-close" id="close-interactions-panel" onclick="closeInteractionsPanel()">✕</button>
+    <button class="panel-close" id="close-interactions-panel">✕</button>
   </div>
   <div class="panel-body" id="panel-body">
     <!-- Contenu généré dynamiquement -->
@@ -586,7 +620,7 @@
   <div class="modal-box">
     <div class="modal-header">
       <div class="modal-title">Modifier l'interaction</div>
-      <button class="modal-close" id="close-edit-inter" onclick="closeInteractionEditModal()">✕</button>
+      <button class="modal-close" id="close-edit-inter">✕</button>
     </div>
     <div id="interaction-edit-body">
       <div class="modal-field">
