@@ -13,9 +13,14 @@ let filteredEnterprises = [];
 document.addEventListener('DOMContentLoaded', async () => {
   await loadAllData();
   initEnterprisesEvents();
+  
+  // 🆕 AFFICHER TOUTES LES ENTREPRISES PAR DÉFAUT
+  filteredEnterprises = [...allEntreprises];
+  
   renderEnterprisesGrid();
   initFilters();
 });
+
 
 // ════════════════════════════════════════════════════════
 //  EVENTS
