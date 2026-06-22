@@ -158,6 +158,9 @@ async function saveInteraction() {
 
       // Recharger les interactions
       await loadInteractions();
+     renderTimeline(currentOpp);
+      closeInteractionForm();
+
       
       // Re-render timeline
       renderTimeline(currentOpp);
