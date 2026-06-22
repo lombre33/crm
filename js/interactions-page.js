@@ -1,5 +1,5 @@
 // ════════════════════════════════════════════════════════
-//  INTERACTIONS PAGE — Module Complet v1.1
+//  INTERACTIONS PAGE — Module Complet v2.0
 // ════════════════════════════════════════════════════════
 console.log('✅ interactions-page.js chargé');
 
@@ -11,10 +11,12 @@ let currentInteraction = null;
 //  INIT
 // ════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
+  console.log('📍 DOMContentLoaded triggered');
   await loadAllData();
-  initInteractionsPageEvents();
   initInteractionFilters();
+  attachInteractionsPageEvents();
   applyInteractionFilters();
+  console.log('✅ Page interactions initialisée');
 });
 
 // ════════════════════════════════════════════════════════
@@ -53,21 +55,18 @@ function initInteractionFilters() {
         .filter(id => id && id > 0)
     )];
 
-    console.log('📞 Contact IDs trouvés:', contactIds);
-
     const uniqueContacts = contactIds
       .map(id => {
         const contact = allContacts.find(c => c.id === id);
-        return {
-          id,
-          nom: contact
-            ? (contact.nom_prenom || `${contact.Prenom || ''} ${contact.Nom || ''}`.trim() || `Contact ${id}`)
-            : `Contact ${id}`
-        };
-      })
-      .filter(c => c.nom && c.nom !== 'Contact undefined');
+        if (!contact) return null;
+        
+        const nom = (contact.nom_prenom && contact.nom_prenom.trim()) 
+          ? contact.nom_prenom 
+          : `${contact.Prenom || ''} ${contact.Nom || ''}`.trim();
 
-    console.log('✅ Contacts uniques:', uniqueContacts);
+        return { id, nom: nom || `Contact ${id}` };
+      })
+      .filter(c => c !== null);
 
     uniqueContacts.sort((a, b) => a.nom.localeCompare(b.nom));
 
@@ -77,12 +76,11 @@ function initInteractionFilters() {
       opt.textContent = contact.nom;
       contactSelect.appendChild(opt);
     });
-
     console.log('✅ Dropdown Contacts rempli:', uniqueContacts.length);
   }
 
   // ──────────────────────────────────────────
-  // OPPORTUNITÉS (et leurs entreprises)
+  // ENTREPRISES (via les opps)
   // ──────────────────────────────────────────
   const entrepriseSelect = document.getElementById('filter-entreprise');
   if (entrepriseSelect) {
@@ -92,31 +90,34 @@ function initInteractionFilters() {
         .filter(id => id && id > 0)
     )];
 
-    console.log('🎯 Opp IDs trouvés:', oppIds);
+    const uniqueEnterprises = oppIds
+      .map(oppId => {
+        const opp = allOpportunites.find(o => o.id === oppId);
+        if (!opp) return null;
 
-    const uniqueOpps = oppIds
-      .map(id => {
-        const opp = allOpportunites.find(o => o.id === id);
+        const entreprise = allEntreprises.find(e => e.id === opp.Entreprise);
+        const entrepriseNom = entreprise?.Nom || opp._entrepriseNom || '—';
+
         return {
-          id,
-          titre: opp?.titre || `Opp ${id}`,
-          entrepriseNom: opp?._entrepriseNom || '—'
+          oppId,
+          entrepriseId: opp.Entreprise,
+          entrepriseNom,
+          oppTitre: opp.titre
         };
       })
-      .filter(o => o.titre && o.titre !== 'undefined');
+      .filter(e => e !== null)
+      // Unique par entrepriseId
+      .filter((e, idx, arr) => arr.findIndex(x => x.entrepriseId === e.entrepriseId) === idx);
 
-    console.log('✅ Opps uniques:', uniqueOpps);
+    uniqueEnterprises.sort((a, b) => a.entrepriseNom.localeCompare(b.entrepriseNom));
 
-    uniqueOpps.sort((a, b) => a.titre.localeCompare(b.titre));
-
-    uniqueOpps.forEach(opp => {
+    uniqueEnterprises.forEach(ent => {
       const opt = document.createElement('option');
-      opt.value = opp.id;
-      opt.textContent = `${opp.titre} (${opp.entrepriseNom})`;
+      opt.value = ent.entrepriseId;
+      opt.textContent = ent.entrepriseNom;
       entrepriseSelect.appendChild(opt);
     });
-
-    console.log('✅ Dropdown Opportunités rempli:', uniqueOpps.length);
+    console.log('✅ Dropdown Entreprises rempli:', uniqueEnterprises.length);
   }
 
   // ──────────────────────────────────────────
@@ -130,21 +131,18 @@ function initInteractionFilters() {
         .filter(id => id && id > 0)
     )];
 
-    console.log('👨‍💼 Assignee IDs trouvés:', assigneeIds);
-
     const uniqueAssignees = assigneeIds
       .map(id => {
         const contact = allContacts.find(c => c.id === id);
-        return {
-          id,
-          nom: contact
-            ? (contact.nom_prenom || `${contact.Prenom || ''} ${contact.Nom || ''}`.trim() || `Assignee ${id}`)
-            : `Assignee ${id}`
-        };
-      })
-      .filter(a => a.nom && a.nom !== 'Assignee undefined');
+        if (!contact) return null;
 
-    console.log('✅ Assignees uniques:', uniqueAssignees);
+        const nom = (contact.nom_prenom && contact.nom_prenom.trim())
+          ? contact.nom_prenom
+          : `${contact.Prenom || ''} ${contact.Nom || ''}`.trim();
+
+        return { id, nom: nom || `Assignee ${id}` };
+      })
+      .filter(a => a !== null);
 
     uniqueAssignees.sort((a, b) => a.nom.localeCompare(b.nom));
 
@@ -154,7 +152,6 @@ function initInteractionFilters() {
       opt.textContent = assignee.nom;
       assigneeSelect.appendChild(opt);
     });
-
     console.log('✅ Dropdown Assignees rempli:', uniqueAssignees.length);
   }
 
@@ -172,31 +169,16 @@ function applyInteractionFilters() {
   const dateFilter = document.getElementById('filter-date')?.value || '';
 
   filteredInteractions = allInteractions.filter(inter => {
-    // Type
     if (typeFilter && inter.type_interaction !== typeFilter) return false;
-
-    // Contact
     if (contactFilter && inter.contact !== parseInt(contactFilter)) return false;
-
-    // Opportunité
     if (entrepriseFilter && inter.Opportunite !== parseInt(entrepriseFilter)) return false;
-
-    // Assignee
     if (assigneeFilter && inter.Assigne !== parseInt(assigneeFilter)) return false;
-
-    // Date (simple: année-mois)
-    if (dateFilter) {
-      const interDate = formatDate(inter.Date);
-      if (!interDate.includes(dateFilter)) return false;
-    }
-
+    if (dateFilter && !formatDate(inter.Date).includes(dateFilter)) return false;
     return true;
   });
 
   // Trier : plus récent en premier
-  filteredInteractions.sort((a, b) => (a.Date || 0) - (b.Date || 0));
-
-
+  filteredInteractions.sort((a, b) => (b.Date || 0) - (a.Date || 0));
 
   renderInteractionsTimeline();
 }
@@ -330,7 +312,7 @@ function openInteractionPanel(interId) {
   `;
 
   panel.classList.add('open');
-  document.getElementById('overlay-interactions').classList.add('open');
+  document.getElementById('overlay-interactions')?.classList.add('open');
 }
 
 // ════════════════════════════════════════════════════════
@@ -353,7 +335,9 @@ function openInteractionEditModal(interId) {
   currentInteraction = inter;
 
   document.getElementById('edit-inter-type').value = inter.type_interaction;
-  document.getElementById('edit-inter-date').value = inter.Date ? new Date(inter.Date * 1000).toISOString().split('T')[0] : '';
+  document.getElementById('edit-inter-date').value = inter.Date 
+    ? new Date(inter.Date * 1000).toISOString().split('T')[0] 
+    : '';
   document.getElementById('edit-inter-contact').value = inter.contact || '';
   document.getElementById('edit-inter-opp').value = inter.Opportunite || '';
   document.getElementById('edit-inter-assignee').value = inter.Assigne || '';
@@ -361,11 +345,14 @@ function openInteractionEditModal(interId) {
   document.getElementById('edit-inter-contenu').value = inter.contenu || '';
 
   document.getElementById('interaction-edit-modal').classList.add('open');
-  document.getElementById('overlay-interactions').classList.add('open');
+  document.getElementById('overlay-interactions')?.classList.add('open');
 }
 
+// ════════════════════════════════════════════════════════
+//  CLOSE EDIT MODAL
+// ════════════════════════════════════════════════════════
 function closeInteractionEditModal() {
-  document.getElementById('interaction-edit-modal').classList.remove('open');
+  document.getElementById('interaction-edit-modal')?.classList.remove('open');
 }
 
 // ════════════════════════════════════════════════════════
@@ -424,18 +411,18 @@ async function saveInteractionEdit() {
 async function deleteInteraction(interId) {
   if (!confirm('Êtes-vous sûr de vouloir supprimer cette interaction ?')) return;
 
-  if (gristReady) {
-    try {
-      await grist.docApi.applyUserActions([['RemoveRecord', 'Interactions', interId]]);
-      showToast('✅ Interaction supprimée !');
-      closeInteractionsPanel();
-      await loadInteractions();
-      initInteractionFilters();
-      applyInteractionFilters();
-    } catch (err) {
-      console.error(err);
-      showToast('❌ Erreur lors de la suppression');
-    }
+  if (!gristReady) return;
+
+  try {
+    await grist.docApi.applyUserActions([['RemoveRecord', 'Interactions', interId]]);
+    showToast('✅ Interaction supprimée !');
+    closeInteractionsPanel();
+    await loadInteractions();
+    initInteractionFilters();
+    applyInteractionFilters();
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Erreur lors de la suppression');
   }
 }
 
@@ -454,185 +441,10 @@ function resetInteractionFilters() {
 }
 
 // ════════════════════════════════════════════════════════
-//  EVENTS
+//  ATTACH EVENTS
 // ════════════════════════════════════════════════════════
-function initInteractionFilters() {
-  console.log('🔄 Initialisation filtres...', {
-    interactions: allInteractions.length,
-    contacts: allContacts.length,
-    opps: allOpportunites.length,
-  });
-
-  // ──────────────────────────────────────────
-  // TYPES (valeurs fixes)
-  // ──────────────────────────────────────────
-  const typeSelect = document.getElementById('filter-type');
-  if (typeSelect) {
-    const types = ['Appel', 'Email', 'Réunion', 'Note'];
-    types.forEach(type => {
-      const opt = document.createElement('option');
-      opt.value = type;
-      opt.textContent = `${getInteractionIcon(type)} ${type}`;
-      typeSelect.appendChild(opt);
-    });
-    console.log('✅ Types remplis:', types.length);
-  }
-
-  // ──────────────────────────────────────────
-  // CONTACTS (unique dans les interactions)
-  // ──────────────────────────────────────────
-  const contactSelect = document.getElementById('filter-contact');
-  if (contactSelect) {
-    const contactIds = [...new Set(
-      allInteractions
-        .map(i => i.contact)
-        .filter(id => id && id > 0)
-    )];
-
-    console.log('📞 Contact IDs trouvés:', contactIds);
-
-    const uniqueContacts = contactIds
-      .map(id => {
-        const contact = allContacts.find(c => c.id === id);
-        if (!contact) return null;
-        
-        // ✅ CORRIGÉ : Utiliser Nom + Prenom si nom_prenom vide
-        const nom = (contact.nom_prenom && contact.nom_prenom.trim()) 
-          ? contact.nom_prenom 
-          : `${contact.Prenom || ''} ${contact.Nom || ''}`.trim();
-
-        return {
-          id,
-          nom: nom || `Contact ${id}`
-        };
-      })
-      .filter(c => c !== null);
-
-    console.log('✅ Contacts uniques:', uniqueContacts);
-
-    uniqueContacts.sort((a, b) => a.nom.localeCompare(b.nom));
-
-    uniqueContacts.forEach(contact => {
-      const opt = document.createElement('option');
-      opt.value = contact.id;
-      opt.textContent = contact.nom;
-      contactSelect.appendChild(opt);
-    });
-
-    console.log('✅ Dropdown Contacts rempli:', uniqueContacts.length);
-  }
-
-  // ──────────────────────────────────────────
-  // ENTREPRISES (via les opps)
-  // ──────────────────────────────────────────
-  const entrepriseSelect = document.getElementById('filter-entreprise');
-  if (entrepriseSelect) {
-    const oppIds = [...new Set(
-      allInteractions
-        .map(i => i.Opportunite)
-        .filter(id => id && id > 0)
-    )];
-
-    console.log('🎯 Opp IDs trouvés:', oppIds);
-
-    const uniqueEnterprises = oppIds
-      .map(oppId => {
-        const opp = allOpportunites.find(o => o.id === oppId);
-        if (!opp) return null;
-
-        // ✅ CHERCHER L'ENTREPRISE par l'ID
-        const entreprise = allEnterprises.find(e => e.id === opp.Entreprise);
-        const entrepriseNom = entreprise?.nom || opp._entrepriseNom || '—';
-
-        return {
-          oppId,
-          entrepriseId: opp.Entreprise,
-          entrepriseNom: entrepriseNom,
-          oppTitre: opp.titre
-        };
-      })
-      .filter(e => e !== null)
-      .filter((e, idx, arr) => arr.findIndex(x => x.entrepriseId === e.entrepriseId) === idx); // Unique par entreprise
-
-    console.log('✅ Entreprises uniques:', uniqueEnterprises);
-
-    uniqueEnterprises.sort((a, b) => a.entrepriseNom.localeCompare(b.entrepriseNom));
-
-    uniqueEnterprises.forEach(ent => {
-      const opt = document.createElement('option');
-      opt.value = ent.entrepriseId;
-      opt.textContent = ent.entrepriseNom;
-      contactSelect.appendChild(opt);
-    });
-
-    console.log('✅ Dropdown Entreprises rempli:', uniqueEnterprises.length);
-  }
-
-  // ──────────────────────────────────────────
-  // ASSIGNÉS (unique dans les interactions)
-  // ──────────────────────────────────────────
-  const assigneeSelect = document.getElementById('filter-assignee');
-  if (assigneeSelect) {
-    const assigneeIds = [...new Set(
-      allInteractions
-        .map(i => i.Assigne)
-        .filter(id => id && id > 0)
-    )];
-
-    console.log('👨‍💼 Assignee IDs trouvés:', assigneeIds);
-
-    const uniqueAssignees = assigneeIds
-      .map(id => {
-        const contact = allContacts.find(c => c.id === id);
-        if (!contact) return null;
-
-        // ✅ CORRIGÉ : Même logique que les contacts
-        const nom = (contact.nom_prenom && contact.nom_prenom.trim())
-          ? contact.nom_prenom
-          : `${contact.Prenom || ''} ${contact.Nom || ''}`.trim();
-
-        return {
-          id,
-          nom: nom || `Assignee ${id}`
-        };
-      })
-      .filter(a => a !== null);
-
-    console.log('✅ Assignees uniques:', uniqueAssignees);
-
-    uniqueAssignees.sort((a, b) => a.nom.localeCompare(b.nom));
-
-    uniqueAssignees.forEach(assignee => {
-      const opt = document.createElement('option');
-      opt.value = assignee.id;
-      opt.textContent = assignee.nom;
-      assigneeSelect.appendChild(opt);
-    });
-
-    console.log('✅ Dropdown Assignees rempli:', uniqueAssignees.length);
-  }
-
-  console.log('✅ Tous les filtres initialisés');
-}
-
-
-// ════════════════════════════════════════════════════════
-//  HELPER : GET ICON BY TYPE
-// ════════════════════════════════════════════════════════
-function getInteractionIcon(type) {
-  const icons = {
-    Appel: '📞',
-    Email: '📧',
-    Réunion: '🤝',
-    Note: '📝',
-  };
-  return icons[type] || '💬';
-}
-// ════════════════════════════════════════════════════════
-//  EVENTS
-// ════════════════════════════════════════════════════════
-function initInteractionsPageEvents() {
-  console.log('🔗 Initialisation des events...');
+function attachInteractionsPageEvents() {
+  console.log('🔗 Attachement des events...');
 
   // Filtres
   document.getElementById('filter-type')?.addEventListener('change', applyInteractionFilters);
@@ -645,21 +457,35 @@ function initInteractionsPageEvents() {
   document.getElementById('btn-reset-interactions')?.addEventListener('click', resetInteractionFilters);
 
   // Modal edit
-  document.getElementById('close-edit-inter')?.addEventListener('click', closeInteractionEditModal);
   document.getElementById('save-inter-btn')?.addEventListener('click', saveInteractionEdit);
+  document.getElementById('close-edit-inter')?.addEventListener('click', closeInteractionEditModal);
 
   // Panel
   document.getElementById('overlay-interactions')?.addEventListener('click', closeInteractionsPanel);
   document.getElementById('close-interactions-panel')?.addEventListener('click', closeInteractionsPanel);
 
-  console.log('✅ Events initialisés');
+  console.log('✅ Events attachés');
 }
+
 // ════════════════════════════════════════════════════════
-//  HELPERS — Utilitaires
+//  HELPERS — UTILITAIRES
 // ════════════════════════════════════════════════════════
 
 /**
- * Formate une date timestamp en chaîne lisible
+ * Retourne l'icône d'un type d'interaction
+ */
+function getInteractionIcon(type) {
+  const icons = {
+    'Appel': '📞',
+    'Email': '📧',
+    'Réunion': '🤝',
+    'Note': '📝',
+  };
+  return icons[type] || '💬';
+}
+
+/**
+ * Formate un timestamp en date lisible avec heure
  * @param {number} timestamp - Secondes depuis epoch
  * @returns {string}
  */
@@ -678,7 +504,7 @@ function formatDatetime(timestamp) {
 }
 
 /**
- * Formate une date timestamp en YYYY-MM-DD
+ * Formate un timestamp en YYYY-MM-DD
  * @param {number} timestamp - Secondes depuis epoch
  * @returns {string}
  */
@@ -695,9 +521,9 @@ function formatDate(timestamp) {
 }
 
 /**
- * Affiche un toast notification
- * @param {string} message - Le message à afficher
- * @param {number} duration - Durée en ms (default 3000)
+ * Affiche une notification toast
+ * @param {string} message
+ * @param {number} duration - ms (default 3000)
  */
 function showToast(message, duration = 3000) {
   const toast = document.getElementById('toast');
@@ -710,4 +536,3 @@ function showToast(message, duration = 3000) {
     toast.classList.remove('show');
   }, duration);
 }
-
