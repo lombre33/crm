@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRM PUI - Entreprises</title>
+  <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── GRILLE ENTREPRISES ─────────────────────────────────── */
+    .enterprises-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .enterprise-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .enterprise-card:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .enterprise-card-title {
+      font-weight: 700;
+      font-size: 15px;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+
+    .enterprise-card-info {
+      font-size: 12px;
+      color: #64748b;
+      margin: 4px 0;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .enterprise-card-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #eff6ff;
+      color: #2563eb;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    /* ── FILTRE HAUT ─────────────────────────────────── */
+    .enterprises-filter {
+      display: flex;
+      gap: 12px;
+      padding: 16px 20px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .enterprises-filter input,
+    .enterprises-filter select {
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    .enterprises-filter input:focus,
+    .enterprises-filter select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+    }
+
+    /* ── SIDE PANEL ENTREPRISE ─────────────────────────────────── */
+    .enterprise-panel {
+      width: 420px;
+      background: white;
+      position: fixed;
+      right: -420px;
+      top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+      z-index: 200;
+      transition: right 0.3s ease;
+      border-left: 1px solid #e2e8f0;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+    }
+
+    .enterprise-panel.open {
+      right: 0;
+    }
+
+    .enterprise-panel-header {
+      padding: 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .enterprise-panel-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #64748b;
+    }
+
+    .enterprise-panel-content {
+      padding: 20px;
+    }
+
+    .enterprise-form-row {
+      margin-bottom: 16px;
+    }
+
+    .enterprise-form-row label {
+      display: block;
+      font-weight: 600;
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .enterprise-form-row input,
+    .enterprise-form-row select,
+    .enterprise-form-row textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #1e293b;
+    }
+
+    .enterprise-form-row input:focus,
+    .enterprise-form-row select:focus,
+    .enterprise-form-row textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+    }
+
+    .enterprise-form-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .enterprise-form-actions button {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .btn-save-enterprise {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-save-enterprise:hover {
+      background: #2563eb;
+    }
+
+    .btn-cancel-enterprise {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .btn-cancel-enterprise:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-delete-enterprise {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    .btn-delete-enterprise:hover {
+      background: #fee2e2;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     NAVBAR
+     ════════════════════════════════════════════════════════ -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="nav-logo">🎓</div>
+    <span class="nav-title">CRM PUI</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab" data-view="dashboard">📊 Dashboard</button>
+    <button class="nav-tab" data-view="opportunites">🎯 Opportunités</button>
+    <button class="nav-tab" data-view="contacts">👤 Contacts</button>
+    <button class="nav-tab active" data-view="entreprises">🏢 Entreprises</button>
+    <button class="nav-tab" data-view="interactions">💬 Interactions</button>
+    <button class="nav-tab" data-view="evenements">📅 Évènements</button>
+  </div>
+  <div class="nav-right">
+    <button class="btn-primary" id="btn-new-enterprise">✨ Nouvelle entreprise</button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════
+     FILTRE
+     ════════════════════════════════════════════════════════ -->
+<div class="enterprises-filter">
+  <input type="text" id="filter-search" placeholder="🔍 Rechercher une entreprise...">
+  <select id="filter-secteur">
+    <option value="">Tous les secteurs</option>
+  </select>
+  <select id="filter-ville">
+    <option value="">Toutes les villes</option>
+  </select>
+  <select id="filter-taille">
+    <option value="">Toutes les tailles</option>
+    <option value="TPE">TPE</option>
+    <option value="PME">PME</option>
+    <option value="ETI">ETI</option>
+    <option value="GE">GE</option>
+  </select>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     GRILLE ENTREPRISES
+     ════════════════════════════════════════════════════════ -->
+<div class="enterprises-container" id="enterprises-grid">
+  <div class="empty-state">
+    <div class="empty-state-icon">📋</div>
+    <p>Chargement des entreprises...</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SIDE PANEL ÉDITION
+     ════════════════════════════════════════════════════════ -->
+<div class="enterprise-panel" id="enterprise-panel">
+  <div class="enterprise-panel-header">
+    <h2 id="panel-enterprise-title">Nouvelle entreprise</h2>
+    <button class="enterprise-panel-close" id="close-enterprise-panel">✕</button>
+  </div>
+  <div class="enterprise-panel-content" id="enterprise-panel-form">
+    <!-- Formulaire généré dynamiquement -->
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     OVERLAY
+     ════════════════════════════════════════════════════════ -->
+<div class="overlay" id="overlay"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     TOAST
+     ════════════════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     SCRIPTS
+     ════════════════════════════════════════════════════════ -->
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/enterprises.js"></script>
+
+</body>
+</html>
