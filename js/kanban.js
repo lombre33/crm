@@ -80,7 +80,21 @@ function createCard(opp) {
   card.className = 'kanban-card';
   card.draggable = true;
   card.dataset.id = opp.id;
+  
+  //debuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuug
+  
+console.log('🔍 DEBUG OPP COMPLÈTE:', {
+    id: opp.id,
+    titre: opp.titre,
+    valeur_estimee: opp.valeur_estimee,
+    valeur_estilmee: opp.valeur_estilmee,
+    valeur: opp.valeur,
+    montant: opp.montant,
+    amount: opp.amount,
+    allKeys: Object.keys(opp)
+  });
 
+  
   // Couleur + icône priorité
   const prioColor = PRIORITE_COLOR[opp.Priorite] || '#6b7280';
   const prioIcon = {
