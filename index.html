@@ -39,41 +39,9 @@
 <div class="placeholder-view" id="view-interactions">💬 Interactions — bientôt disponible</div>
 <div class="placeholder-view" id="view-evenements">📅 Évènements — bientôt disponible</div>
 
-<!-- KANBAN -->
+<!-- VUE OPPORTUNITÉS : KANBAN -->
+<div class="kanban-view" id="kanban-view">
 
-
-    <!-- Formulaire édition -->
-    <div class="panel-scroll">
-      <div id="panel-form"></div>
-
-      <!-- Actions directes -->
-      <div class="panel-section">
-        <div class="panel-section-title">Actions directes</div>
-        <div id="panel-actions"></div>
-      </div>
-
-      <!-- Logger interaction -->
-      <div class="panel-section">
-        <div class="panel-section-title">Logger une interaction</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn-log-type" onclick="openLogModal('Appel')">📞 Appel</button>
-          <button class="btn-log-type" onclick="openLogModal('Email')">📧 Email</button>
-          <button class="btn-log-type" onclick="openLogModal('Note')">📝 Note</button>
-          <button class="btn-log-type" onclick="openLogModal('Réunion')">📅 RDV</button>
-        </div>
-      </div>
-
-      <!-- Timeline -->
-      <div class="panel-section">
-        <div class="panel-section-title">Historique</div>
-        <div id="panel-timeline"></div>
-      </div>
-    </div>
-  </aside>
-</div>
-  <div class="kanban-view" id="kanban-view">
-
-  <!-- COLONNES (générées une par statut) -->
   <div class="kanban-col" data-statut="Prospect">
     <div class="col-header">
       <div class="col-title">🎯 Prospect</div>
@@ -124,17 +92,50 @@
     <button class="add-card-btn">+ Ajouter</button>
   </div>
 
-  <!-- SIDE PANEL -->
-  <div class="overlay" id="overlay"></div>
-  <aside class="side-panel" id="side-panel">
-    <div class="panel-header">
-      <div>
-        <div class="panel-company" id="panel-company">—</div>
-        <div class="panel-status" id="panel-status"></div>
-        <div class="panel-amount" id="panel-amount"></div>
-      </div>
-      <button class="close-panel" id="close-panel">✕</button>
+</div><!-- fin #kanban-view -->
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay"></div>
+
+<!-- SIDE PANEL (fixed, hors kanban) -->
+<aside class="side-panel" id="side-panel">
+  <div class="panel-header">
+    <div>
+      <div class="panel-company" id="panel-company">—</div>
+      <div class="panel-status" id="panel-status"></div>
+      <div class="panel-amount" id="panel-amount"></div>
     </div>
+    <button class="close-panel" id="close-panel">✕</button>
+  </div>
+
+  <div class="panel-scroll">
+    <!-- Formulaire édition -->
+    <div id="panel-form"></div>
+
+    <!-- Actions directes -->
+    <div class="panel-section">
+      <div class="panel-section-title">Actions directes</div>
+      <div id="panel-actions"></div>
+    </div>
+
+    <!-- Logger interaction -->
+    <div class="panel-section">
+      <div class="panel-section-title">Logger une interaction</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-log-type" onclick="openLogModal('Appel')">📞 Appel</button>
+        <button class="btn-log-type" onclick="openLogModal('Email')">📧 Email</button>
+        <button class="btn-log-type" onclick="openLogModal('Note')">📝 Note</button>
+        <button class="btn-log-type" onclick="openLogModal('Réunion')">📅 RDV</button>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="panel-section">
+      <div class="panel-section-title">Historique</div>
+      <div id="panel-timeline"></div>
+    </div>
+  </div>
+</aside>
 
 <!-- MODAL LOG INTERACTION -->
 <div class="modal-overlay" id="log-modal">
@@ -155,12 +156,13 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- SCRIPTS (ordre important) -->
+<!-- SCRIPTS -->
 <script src="js/config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/kanban.js"></script>
 <script src="js/panel.js"></script>
 <script src="js/interactions.js"></script>
 <script src="js/app.js"></script>
+
 </body>
 </html>
