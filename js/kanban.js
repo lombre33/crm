@@ -3,14 +3,24 @@
 // ════════════════════════════════════════════════════════
 
 function renderKanban() {
+  console.log('🔄 Rendu Kanban — Opps:', allOpportunites.length);
+
   STATUTS.forEach(statut => {
     const col = document.querySelector(`.kanban-col[data-statut="${statut}"]`);
-    if (!col) return;
+    if (!col) {
+      console.warn(`⚠️ Colonne "${statut}" non trouvée`);
+      return;
+    }
 
     const container = col.querySelector('.cards-container');
-    if (!container) return;
+    if (!container) {
+      console.warn(`⚠️ Container pour "${statut}" non trouvé`);
+      return;
+    }
 
+    // Filtrer les opps par statut
     const cards = allOpportunites.filter(o => o.statut === statut);
+    console.log(`📊 ${statut}: ${cards.length} opps`);
 
     // Total colonne
     const total = cards.reduce((sum, o) => sum + (o.valeur_estimee || 0), 0);
@@ -23,7 +33,7 @@ function renderKanban() {
 
     // Vide le container
     container.innerHTML = '';
-    
+
     // Crée les cartes
     cards.forEach(opp => {
       const cardEl = createCard(opp);
@@ -46,62 +56,88 @@ function renderKanban() {
     }
   });
 
+  // Initialiser drag & drop
   initDragDrop();
 }
 
+// ════════════════════════════════════════════════════════
+//  CRÉER UNE CARTE
+// ════════════════════════════════════════════════════════
 function createCard(opp) {
+  // Enrichissement des données
+  enrichOpp(opp);
+
   const card = document.createElement('div');
-  card.className = 'kanban-card';  // ← CORRIGÉ : 'opportunity-card' → 'kanban-card'
+  card.className = 'kanban-card';
   card.draggable = true;
   card.dataset.id = opp.id;
 
-  const prioIcon = { 'Haute':'🔴', 'Moyenne':'🟡', 'Basse':'⚪' }[opp.Priorite] || '⚪';
-  const prioColor = { 'Haute':'#dc2626', 'Moyenne':'#d97706', 'Basse':'#059669' }[opp.Priorite] || '#6b7280';
+  // Couleur + icône priorité
+  const prioColor = PRIORITE_COLOR[opp.Priorite] || '#6b7280';
+  const prioIcon = {
+    'Haute': '🔴',
+    'Moyenne': '🟡',
+    'Basse': '⚪'
+  }[opp.Priorite] || '⚪';
+
+  // Contact & Entreprise enrichis
+  const contactNom = opp.contact_nom || '—';
+  const entrepriseNom = opp.entreprise_nom || '—';
+  const valeur = formatEuros(opp.valeur_estimee || 0);
 
   card.innerHTML = `
-    <div class="card-title">${escHtml(opp.titre)}</div>
-    <div class="card-company">${escHtml(opp.entreprise_nom || '—')}</div>
-    <div class="card-contact">
-      <div class="contact-avatar">${(opp.contact_nom || '?')[0].toUpperCase()}</div>
-      <span>${escHtml(opp.contact_nom || '—')}</span>
+    <div class="card-header">
+      <div class="card-title">${escHtml(opp.titre)}</div>
+      <div class="card-prio" style="color: ${prioColor}; font-weight: 600;">
+        ${prioIcon} ${opp.Priorite || '—'}
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-field">
+        <span class="card-label">🏢</span>
+        <span class="card-value">${escHtml(entrepriseNom)}</span>
+      </div>
+      <div class="card-field">
+        <span class="card-label">👤</span>
+        <span class="card-value">${escHtml(contactNom)}</span>
+      </div>
     </div>
     <div class="card-footer">
-      <div class="card-amount">${formatEuros(opp.valeur_estimee)}</div>
-      <span class="card-priority" style="background: ${prioColor}20; color: ${prioColor};">
-        ${prioIcon} ${opp.Priorite}
-      </span>
+      <div class="card-amount">💰 ${valeur}</div>
     </div>
-    <div class="card-date">📅 ${formatDate(opp.date_clotureestimee)}</div>
   `;
 
-  // Ouverture du panel au clic
+  // ⚡ EVENT LISTENER : Click sur la carte
   card.addEventListener('click', (e) => {
     e.stopPropagation();
+    console.log('🖱️ Clic carte:', opp.id);
     openPanel(opp);
+  });
+
+  // Event listeners drag & drop
+  card.addEventListener('dragstart', (e) => {
+    draggedCardId = parseInt(card.dataset.id);
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  card.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
   });
 
   return card;
 }
 
+// ════════════════════════════════════════════════════════
+//  DRAG & DROP
+// ════════════════════════════════════════════════════════
 function initDragDrop() {
   const cards = document.querySelectorAll('.kanban-card');
   const cols = document.querySelectorAll('.kanban-col');
 
-  // Drag sur les cartes
-  cards.forEach(card => {
-    card.addEventListener('dragstart', (e) => {
-      draggedCardId = parseInt(card.dataset.id);
-      card.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-    });
+  console.log(`🎯 Drag-drop init: ${cards.length} cartes, ${cols.length} colonnes`);
 
-    card.addEventListener('dragend', () => {
-      card.classList.remove('dragging');
-      draggedCardId = null;
-    });
-  });
-
-  // Drop sur les colonnes
+  // Comportement colonnes
   cols.forEach(col => {
     col.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -121,14 +157,24 @@ function initDragDrop() {
 
       const newStatut = col.dataset.statut;
       const opp = allOpportunites.find(o => o.id === draggedCardId);
-      
-      if (!opp || opp.statut === newStatut) return;
+
+      if (!opp) {
+        console.error('❌ Opp non trouvée:', draggedCardId);
+        return;
+      }
+
+      if (opp.statut === newStatut) {
+        console.log('ℹ️ Même statut, rien à faire');
+        return;
+      }
+
+      console.log(`📌 Déplacement: ${opp.titre} → ${newStatut}`);
 
       const oldStatut = opp.statut;
       opp.statut = newStatut;
       renderKanban();
 
-      // Sync avec Grist
+      // Sync Grist
       if (gristReady) {
         try {
           await grist.docApi.applyUserActions([
@@ -136,7 +182,7 @@ function initDragDrop() {
           ]);
           showToast(`✅ Déplacé vers "${newStatut}"`);
         } catch (err) {
-          console.error('Erreur drag-drop:', err);
+          console.error('❌ Erreur drag-drop:', err);
           opp.statut = oldStatut;
           renderKanban();
           showToast('❌ Erreur : impossible de déplacer');
@@ -148,16 +194,30 @@ function initDragDrop() {
   });
 }
 
-// Animation feedback drag
-const style = document.createElement('style');
-style.textContent = `
-  .kanban-card.dragging {
-    opacity: 0.5;
-    transform: scale(0.95);
-  }
-  .kanban-col.drag-over {
-    background: rgba(59, 130, 246, 0.08) !important;
-    border-color: rgba(59, 130, 246, 0.3) !important;
-  }
-`;
-document.head.appendChild(style);
+// ════════════════════════════════════════════════════════
+//  STYLE FEEDBACK DRAG
+// ════════════════════════════════════════════════════════
+if (!document.getElementById('kanban-styles')) {
+  const style = document.createElement('style');
+  style.id = 'kanban-styles';
+  style.textContent = `
+    .kanban-card.dragging {
+      opacity: 0.5;
+      transform: scale(0.95);
+      cursor: grabbing;
+    }
+    .kanban-col.drag-over {
+      background: rgba(59, 130, 246, 0.08) !important;
+      border-color: rgba(59, 130, 246, 0.3) !important;
+    }
+    .kanban-card {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .kanban-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+  `;
+  document.head.appendChild(style);
+}
