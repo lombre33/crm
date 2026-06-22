@@ -6,6 +6,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   loadAllData();
   initEvents();
+  // Affiche le kanban par défaut (vue Opportunités active)
+  showKanban();
 });
 
 // ── Events UI ─────────────────────────────────────────
@@ -20,7 +22,7 @@ function initEvents() {
   document.getElementById('search-input')
     ?.addEventListener('input', function() {
       const q = this.value.toLowerCase().trim();
-      document.querySelectorAll('.opportunity-card').forEach(card => {
+      document.querySelectorAll('.kanban-card').forEach(card => {
         card.style.display = card.textContent.toLowerCase().includes(q) ? '' : 'none';
       });
     });
@@ -34,14 +36,17 @@ function initEvents() {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
+      
       const view = tab.dataset.view;
-      document.getElementById('kanban-view').style.display =
-        view === 'opportunites' ? 'flex' : 'none';
-      document.querySelectorAll('.placeholder-view').forEach(pv => pv.classList.remove('active'));
-      if (view !== 'opportunites') {
+      closePanel();
+      
+      if (view === 'opportunites') {
+        showKanban();
+      } else {
+        hideKanban();
+        document.querySelectorAll('.placeholder-view').forEach(pv => pv.classList.remove('active'));
         document.getElementById('view-' + view)?.classList.add('active');
       }
-      closePanel();
     });
   });
 
@@ -57,6 +62,22 @@ function initEvents() {
       if (e.target === document.getElementById('inter-detail-overlay'))
         document.getElementById('inter-detail-overlay').classList.remove('open');
     });
+}
+
+// ── Affichage Kanban ──────────────────────────────────
+function showKanban() {
+  const kanban = document.getElementById('kanban-view');
+  if (kanban) {
+    kanban.classList.add('active');
+  }
+  document.querySelectorAll('.placeholder-view').forEach(pv => pv.classList.remove('active'));
+}
+
+function hideKanban() {
+  const kanban = document.getElementById('kanban-view');
+  if (kanban) {
+    kanban.classList.remove('active');
+  }
 }
 
 // ════════════════════════════════════════════════════════
