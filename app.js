@@ -3,7 +3,7 @@
 //  Widget Grist — JS principal
 //  Version 0.4 — Juin 2026
 // ════════════════════════════════════════════════════════
-
+/*
 // ── État global ──────────────────────────────────────────
 let allOpportunites     = [];
 let allInteractions     = [];
@@ -697,4 +697,4 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
-}
+}*/
