@@ -10,8 +10,8 @@ let gristReady       = false;
 let draggedCardId    = null;
 
 // 🆕 NOUVELLES VARIABLES GLOBALES
-window.allSecteurs   = [];
-window.allVilles     = [];
+let allSecteurs      = [];
+let allVilles        = [];
 
 // ════════════════════════════════════════════════════════
 //  CHARGEMENT GRIST
@@ -55,17 +55,15 @@ async function loadAllData() {
       Contact_principale: entreprises.Contact_principale?.[i] || null,
     }));
 
-    // 🆕 SECTEURS
-    window.allSecteurs = secteurs.id.map((id, i) => ({
-      id,
-      nom: secteurs.nom?.[i] || '',
-    }));
+allSecteurs = secteurs.id.map((id, i) => ({
+  id,
+  nom: secteurs.nom?.[i] || '',
+}));
 
-    // 🆕 VILLES
-    window.allVilles = villes.id.map((id, i) => ({
-      id,
-      nom: villes.nom?.[i] || '',
-    }));
+allVilles = villes.id.map((id, i) => ({
+  id,
+  nom: villes.nom?.[i] || '',
+}));
 
     // 🔥 Extraction propre des interactions
     _parseInteractions(interactions);
