@@ -60,15 +60,12 @@ function initFilters() {
 
   // Remplir dropdowns villes
   const villeSelect = document.getElementById('filter-ville');
-  villes.forEach(villeId => {
-    const ville = allVilles?.find(v => v.id === villeId);
-    if (ville) {
-      const opt = document.createElement('option');
-      opt.value = villeId;
-      opt.textContent = ville.nom || `Ville ${villeId}`;
-      villeSelect.appendChild(opt);
-    }
-  });
+ villes.forEach(ville => {
+  const opt = document.createElement('option');
+  opt.value = ville.id;        // ✅ ID en value
+  opt.textContent = ville.nom; // ✅ Nom affiché
+  villeSelect.appendChild(opt);
+});
 
   // Events filtres
   document.getElementById('filter-search')?.addEventListener('input', applyFilters);
