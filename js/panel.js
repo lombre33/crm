@@ -132,12 +132,23 @@ function renderPanelDetails(opp) {
         ✎ Éditer la fiche
       </button>
     </div>
+         <div class="panel-section">
+      <div class="panel-section-title">📋 AJOUTER UNE INTERACTION</div>
+      <button id="btn-add-interaction" class="btn-secondary" style="width: 100%;">
+        ➕ Nouvelle interaction
+      </button>
+    </div>
   `;
 
   // Event listener pour l'édition
   document.getElementById('btn-edit-opp')?.addEventListener('click', () => {
     renderPanelEditForm(opp);
   });
+    document.getElementById('btn-add-interaction')?.addEventListener('click', () => {
+    openInteractionForm();
+  });
+  
+
 }
 
 // ════════════════════════════════════════════════════════
@@ -409,7 +420,6 @@ function renderTimeline(opp) {
   const timelineEl = document.getElementById('panel-timeline');
   if (!timelineEl) return;
 
-  // 🔑 FIX : utilise "Opportunite" au lieu de "opportunite_id"
   const interactions = allInteractions.filter(i => i.Opportunite === opp.id);
 
   if (interactions.length === 0) {
@@ -417,11 +427,10 @@ function renderTimeline(opp) {
     return;
   }
 
-  // 🔑 FIX : utilise "Date" au lieu de "date_creation"
   const timeline = interactions
     .sort((a, b) => (b.Date || 0) - (a.Date || 0))
     .map(inter => `
-      <div class="timeline-item">
+      <div class="timeline-item" data-inter-id="${inter.id}">
         <div class="timeline-dot ${inter.type_interaction?.toLowerCase()}">
           ${{ 'Appel': '☎️', 'Email': '📧', 'Réunion': '🤝', 'Visite': '🚗', 'Devis': '📄', 'Contrat': '📋', 'Note': '📝', 'Autre': '📌' }[inter.type_interaction] || '📌'}
         </div>
@@ -436,5 +445,29 @@ function renderTimeline(opp) {
     `).join('');
 
   timelineEl.innerHTML = `<div class="timeline">${timeline}</div>`;
+
+  // 🔑 Event listeners sur chaque interaction
+  timelineEl.querySelectorAll('.timeline-item').forEach(item => {
+    item.style.cursor = 'pointer';
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const interId = parseInt(item.dataset.interId);
+      const interaction = allInteractions.find(i => i.id === interId);
+      if (interaction) {
+        console.log('🖱️ Clic interaction:', interId);
+        openInteractionForm(interaction);
+      }
+    });
+    
+    item.addEventListener('mouseenter', () => {
+      item.style.background = 'rgba(59, 130, 246, 0.05)';
+      item.style.borderRadius = '8px';
+    });
+    
+    item.addEventListener('mouseleave', () => {
+      item.style.background = 'transparent';
+    });
+  });
 }
+
 
