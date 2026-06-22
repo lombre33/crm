@@ -408,6 +408,9 @@ function createNewEnterprise() {
 // ════════════════════════════════════════════════════════
 //  SAUVEGARDER
 // ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════
+//  SAUVEGARDER
+// ════════════════════════════════════════════════════════
 async function saveEnterprise() {
   if (!currentEnterprise) return;
 
@@ -450,23 +453,33 @@ async function saveEnterprise() {
           ['UpdateRecord', 'Entreprise', currentEnterprise.id, data]
         ]);
         showToast('✅ Entreprise mise à jour');
+        
+        // 🆕 RECHARGER LES DONNÉES APRÈS UPDATE
+        await loadAllData();
+        
       } else {
         // CREATE
         await grist.docApi.applyUserActions([
           ['AddRecord', 'Entreprise', null, data]
         ]);
         showToast('✅ Entreprise créée');
+        
+        // 🆕 RECHARGER LES DONNÉES APRÈS CREATE
         await loadAllData();
       }
       
+      // 🆕 APPLIQUER LES FILTRES (remet à jour la grid)
+      applyFilters();
+      
       closeEnterprisePanel();
-      renderEnterprisesGrid();
+      
     } catch (err) {
       console.error('❌ Erreur sauvegarde:', err);
       showToast('❌ Erreur lors de la sauvegarde');
     }
   }
 }
+
 
 // ════════════════════════════════════════════════════════
 //  SUPPRIMER
