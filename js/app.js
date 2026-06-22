@@ -123,11 +123,12 @@ function showToast(msg) {
 
 async function initApp() {
   try {
-    await loadAllData();  // ← Appelle data.js
-    initFilterAssignee();
-    renderKanban();
+    await loadAllData();      // ← Charge les données
+    initFilterAssignee();     // ← 🆕 Initialise le dropdown
+    renderKanban();           // ← Affiche le kanban
   } catch (err) {
     console.error('❌ Erreur chargement données:', err);
   }
 }
+
 
