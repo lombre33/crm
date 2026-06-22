@@ -8,9 +8,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initApp();
   initEvents();
   showKanban();
-  if (document.getElementById('kanban-view')) {
-    renderKanban();     // ← Maintenant les données EXISTENT
-  }
+  
+    renderKanban();     
+  
 });
 
 // ── Init App ──────────────────────────────────────────
