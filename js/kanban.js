@@ -195,29 +195,34 @@ function initDragDrop() {
 }
 
 // ════════════════════════════════════════════════════════
-//  STYLE FEEDBACK DRAG
+//  STYLE FEEDBACK DRAG (avec ghost image)
 // ════════════════════════════════════════════════════════
 if (!document.getElementById('kanban-styles')) {
   const style = document.createElement('style');
   style.id = 'kanban-styles';
   style.textContent = `
-    .kanban-card.dragging {
-      opacity: 0.5;
-      transform: scale(0.95);
-      cursor: grabbing;
-    }
-    .kanban-col.drag-over {
-      background: rgba(59, 130, 246, 0.08) !important;
-      border-color: rgba(59, 130, 246, 0.3) !important;
-    }
     .kanban-card {
-      cursor: pointer;
+      cursor: grab;
       transition: all 0.2s ease;
     }
+    
     .kanban-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
+    
+    .kanban-card.dragging {
+      opacity: 0.7;
+      transform: rotate(3deg) scale(1.02);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .kanban-col.drag-over {
+      background: rgba(59, 130, 246, 0.1) !important;
+      border: 2px dashed rgba(59, 130, 246, 0.5) !important;
+    }
   `;
   document.head.appendChild(style);
 }
+
