@@ -38,7 +38,7 @@ function renderKanban() {
     cards.forEach(opp => {
       // 🔑 IMPORTANT : enrichir AVANT de créer la carte
       enrichOpp(opp);
-      const cardEl = createCard(opp);
+      const cardEl = (opp);
       container.appendChild(cardEl);
     });
 
@@ -79,7 +79,6 @@ function createCard(opp) {
     'Basse': '⚪'
   }[opp.Priorite] || '⚪';
 
-  // 🔑 Utiliser les noms enrichis avec underscore
   const entrepriseNom = opp._entrepriseNom || '—';
   const contactNom = opp._contactNom || '—';
   const valeur = formatEuros(opp.valeur_estimee || 0);
@@ -107,11 +106,20 @@ function createCard(opp) {
   `;
 
   // ⚡ EVENT LISTENER : Click sur la carte
-  card.addEventListener('click', (e) => {
+  // 🔑 Utiliser une fonction nommée pour éviter les doublons
+  const handleCardClick = (e) => {
     e.stopPropagation();
     console.log('🖱️ Clic carte:', opp.id, opp.titre);
+    
+    if (typeof openPanel !== 'function') {
+      console.error('❌ openPanel() n\'existe pas !');
+      return;
+    }
+    
     openPanel(opp);
-  });
+  };
+  
+  card.addEventListener('click', handleCardClick);
 
   // Event listeners drag & drop
   card.addEventListener('dragstart', (e) => {
@@ -127,6 +135,7 @@ function createCard(opp) {
 
   return card;
 }
+
 
 // ════════════════════════════════════════════════════════
 //  DRAG & DROP
