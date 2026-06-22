@@ -35,12 +35,14 @@ function renderKanban() {
     container.innerHTML = '';
 
     // Crée les cartes
-    cards.forEach(opp => {
-      // 🔑 IMPORTANT : enrichir AVANT de créer la carte
-      enrichOpp(opp);
-      const cardEl = (opp);
-      container.appendChild(cardEl);
-    });
+  // Crée les cartes
+cards.forEach(opp => {
+  // 🔑 IMPORTANT : enrichir AVANT de créer la carte
+  enrichOpp(opp);
+  const cardEl = createCard(opp);  // ← ✅ ICI
+  container.appendChild(cardEl);
+});
+
 
     // Message "vide" si aucune carte
     if (cards.length === 0) {
