@@ -65,7 +65,7 @@ function initEvents() {
 }
 
 // ── Navigation Multi-pages ────────────────────────────
-/*function initNavigation() {
+function initNavigation() {
   const navContainer = document.querySelector('.nav-tabs');
   
   if (!navContainer) {
@@ -110,7 +110,7 @@ function hideKanban() {
   if (kanban) {
     kanban.classList.remove('active');
   }
-}*/
+}
 
 // ════════════════════════════════════════════════════════
 //  UTILITAIRES
