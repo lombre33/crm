@@ -1,6 +1,7 @@
 // ════════════════════════════════════════════════════════
 //  SIDE PANEL — Affichage + Édition + Actions
 // ════════════════════════════════════════════════════════
+console.log('✅ panel.js chargé');
 
 function openPanel(opp) {
   if (!opp) return;
