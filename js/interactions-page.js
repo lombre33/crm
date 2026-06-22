@@ -183,9 +183,8 @@ function applyInteractionFilters() {
 
   renderInteractionsTimeline();
 }
-
 // ════════════════════════════════════════════════════════
-//  RENDER TIMELINE
+//  RENDER TIMELINE (COMPACT VERSION)
 // ════════════════════════════════════════════════════════
 function renderInteractionsTimeline() {
   const container = document.getElementById('interactions-timeline');
@@ -209,31 +208,23 @@ function renderInteractionsTimeline() {
     const opp = inter._opportuniteTitre || '—';
     const entreprise = inter._entrepriseNom || '—';
     const contenu = inter.contenu || '(Pas de contenu)';
-    const duree = inter.duree ? `${inter.duree} min` : '—';
 
     return `
-      <div class="timeline-item" data-id="${inter.id}" style="cursor: pointer;">
+      <div class="timeline-item" data-id="${inter.id}" onclick="openInteractionPanel(${inter.id})">
         <div class="timeline-dot">${icon}</div>
         <div class="timeline-content">
           <div class="timeline-header">
             <div class="timeline-type-badge">${inter.type_interaction}</div>
             <div class="timeline-date">${date}</div>
           </div>
-
-          <div class="timeline-details">
-            <p><strong>👤 Contact :</strong> ${contact}</p>
-            <p><strong>🏢 Entreprise :</strong> ${entreprise}</p>
-            <p><strong>🎯 Opportunité :</strong> ${opp}</p>
-            <p><strong>👨‍💼 Assigné à :</strong> ${assignee}</p>
-            <p><strong>⏱️ Durée :</strong> ${duree}</p>
-            <p><strong>📝 Contenu :</strong></p>
-            <p class="timeline-contenu">${contenu}</p>
+          <div class="timeline-meta">
+            ${entreprise !== '—' ? `<div class="timeline-meta-row"><strong>🏢 Ent:</strong> <span>${entreprise}</span></div>` : ''}
+            ${opp !== '—' ? `<div class="timeline-meta-row"><strong>🎯 Opp:</strong> <span>${opp}</span></div>` : ''}
+            ${assignee !== '—' ? `<div class="timeline-meta-row"><strong>👤 Assigné:</strong> <span>${assignee}</span></div>` : ''}
           </div>
-
-          <div class="timeline-actions">
-            <button class="btn-small" onclick="openInteractionPanel(${inter.id})">✏️ Détails</button>
-          </div>
+          <div class="timeline-content-text">${contenu}</div>
         </div>
+        <button class="timeline-btn-details" onclick="event.stopPropagation()">📖</button>
       </div>
     `;
   }).join('');
