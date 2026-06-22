@@ -1,15 +1,12 @@
 // ════════════════════════════════════════════════════════
 //  APP — Init + Events UI + Utilitaires
 // ════════════════════════════════════════════════════════
-
 // ── Init ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  loadAllData();        // ← Force le rechargement
   initApp();
   initEvents();
-// initNavigation();
   
-  // Affiche le kanban par défaut (vue Opportunités active)
-  // ⚠️ Seulement si on est sur index.html
   if (document.getElementById('kanban-view')) {
     showKanban();
   }
@@ -18,14 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── Init App ──────────────────────────────────────────
 async function initApp() {
   try {
-    await loadAllData();      // ← Charge les données
+    // Les données sont déjà chargées au-dessus
     
-    // Initialise le dropdown SEULEMENT si on est sur index.html
     if (typeof initFilterAssignee === 'function') {
       initFilterAssignee();
     }
     
-    // Affiche le kanban SEULEMENT si on est sur index.html
     if (typeof renderKanban === 'function') {
       renderKanban();
     }
