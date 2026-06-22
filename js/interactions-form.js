@@ -39,9 +39,14 @@ function renderInteractionModal(interaction = null) {
   
   const type = interaction?.type_interaction || 'Email';
   const contenu = interaction?.contenu || '';
-  const dateVal = interaction?.Date 
-    ? new Date(interaction.Date * 1000).toISOString().slice(0, 16)
-    : new Date().toISOString().slice(0, 16);
+  let dateVal = new Date().toISOString().slice(0, 16);
+  if (interaction?.Date && interaction.Date > 0) {
+    try {
+      dateVal = new Date(interaction.Date * 1000).toISOString().slice(0, 16);
+    } catch (e) {
+      console.warn('⚠️ Date invalide:', interaction.Date);
+    }
+  }
 
   const typeOpts = ['Email', 'Appel', 'Réunion', 'Visite', 'Devis', 'Contrat', 'Note', 'Autre']
     .map(t => `<option value="${t}" ${t === type ? 'selected' : ''}>${t}</option>`)
