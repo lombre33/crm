@@ -90,21 +90,7 @@ function createCard(opp) {
   card.className = 'kanban-card';
   card.draggable = true;
   card.dataset.id = opp.id;
-  
-  //debuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuug
-  
-console.log('🔍 DEBUG OPP COMPLÈTE:', {
-    id: opp.id,
-    titre: opp.titre,
-    valeur_estimee: opp.valeur_estimee,
-    valeur_estilmee: opp.valeur_estilmee,
-    valeur: opp.valeur,
-    montant: opp.montant,
-    amount: opp.amount,
-    allKeys: Object.keys(opp)
-  });
 
-  
   // Couleur + icône priorité
   const prioColor = PRIORITE_COLOR[opp.Priorite] || '#6b7280';
   const prioIcon = {
@@ -116,6 +102,9 @@ console.log('🔍 DEBUG OPP COMPLÈTE:', {
   const entrepriseNom = opp._entrepriseNom || '—';
   const contactNom = opp._contactNom || '—';
   const valeur = formatEuros(opp.valeur_estimee || 0);
+  
+  // 🆕 INITIALES ASSIGNEE
+  const assigneeInitiales = opp._assigneeInitiales || '';
 
   card.innerHTML = `
     <div class="card-header">
@@ -136,11 +125,11 @@ console.log('🔍 DEBUG OPP COMPLÈTE:', {
     </div>
     <div class="card-footer">
       <div class="card-amount">💰 ${valeur}</div>
+      ${assigneeInitiales ? `<div class="card-assignee">${escHtml(assigneeInitiales)}</div>` : ''}
     </div>
   `;
 
   // ⚡ EVENT LISTENER : Click sur la carte
-  // 🔑 Utiliser une fonction nommée pour éviter les doublons
   const handleCardClick = (e) => {
     e.stopPropagation();
     console.log('🖱️ Clic carte:', opp.id, opp.titre);
@@ -169,6 +158,7 @@ console.log('🔍 DEBUG OPP COMPLÈTE:', {
 
   return card;
 }
+
 
 
 // ════════════════════════════════════════════════════════
@@ -268,4 +258,51 @@ if (!document.getElementById('kanban-styles')) {
   `;
   document.head.appendChild(style);
 }
+// ════════════════════════════════════════════════════════
+//  INITIALISER LE FILTRE ASSIGNEE
+// ════════════════════════════════════════════════════════
+function initFilterAssignee() {
+  const select = document.getElementById('filter-assignee');
+  if (!select) {
+    console.warn('⚠️ Dropdown filter-assignee non trouvé');
+    return;
+  }
 
+  // Extraire les assignees uniques
+  const assigneeIds = new Set(allOpportunites
+    .filter(o => o.assignee_a)
+    .map(o => o.assignee_a)
+  );
+
+  console.log(`📋 Assignees uniques trouvés: ${assigneeIds.size}`);
+
+  // Remplir allAssignees avec les noms
+  allAssignees = Array.from(assigneeIds).map(id => {
+    const opp = allOpportunites.find(o => o.assignee_a === id);
+    return {
+      id: id,
+      nom: opp ? (opp._assigneeNom || `Assignee ${id}`) : `Assignee ${id}`
+    };
+  });
+
+  // Trier par nom
+  allAssignees.sort((a, b) => a.nom.localeCompare(b.nom));
+
+  // Remplir le select
+  select.innerHTML = '<option value="">📋 Tous mes collègues</option>';
+  allAssignees.forEach(assignee => {
+    const opt = document.createElement('option');
+    opt.value = assignee.id;
+    opt.textContent = assignee.nom;
+    select.appendChild(opt);
+  });
+
+  // Event listener
+  select.addEventListener('change', (e) => {
+    filteredOpportunitesAssignee = e.target.value ? parseInt(e.target.value) : null;
+    console.log(`🔍 Filtre changé → assignee ${filteredOpportunitesAssignee}`);
+    renderKanban();
+  });
+
+  console.log('✅ Filtre assignee initialisé');
+}
