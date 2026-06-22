@@ -1,6 +1,33 @@
 // ════════════════════════════════════════════════════════
 //  TIMELINE & LOG INTERACTIONS
 // ════════════════════════════════════════════════════════
+
+// 🔑 Types d'interaction disponibles
+const INTERACTION_TYPES = [
+  'Appel',
+  'Email',
+  'Réunion',
+  'Visite',
+  'Devis',
+  'Contrat',
+  'Note',
+  'Autre'
+];
+
+// 🔑 Icônes par type d'interaction
+const INTERACTION_ICONS = {
+  'Appel': '☎️',
+  'Email': '📧',
+  'Réunion': '🤝',
+  'Visite': '🚗',
+  'Devis': '📄',
+  'Contrat': '📋',
+  'Note': '📝',
+  'Autre': '📌'
+};
+
+
+
 function renderTimeline(opp) {
   const container = document.getElementById('panel-timeline');
   if (!container) return;
