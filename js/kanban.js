@@ -36,6 +36,8 @@ function renderKanban() {
 
     // Crée les cartes
     cards.forEach(opp => {
+      // 🔑 IMPORTANT : enrichir AVANT de créer la carte
+      enrichOpp(opp);
       const cardEl = createCard(opp);
       container.appendChild(cardEl);
     });
@@ -64,9 +66,6 @@ function renderKanban() {
 //  CRÉER UNE CARTE
 // ════════════════════════════════════════════════════════
 function createCard(opp) {
-  // Enrichissement des données
-  enrichOpp(opp);
-
   const card = document.createElement('div');
   card.className = 'kanban-card';
   card.draggable = true;
@@ -80,9 +79,9 @@ function createCard(opp) {
     'Basse': '⚪'
   }[opp.Priorite] || '⚪';
 
-  // Contact & Entreprise enrichis
-  const contactNom = opp.contact_nom || '—';
-  const entrepriseNom = opp.entreprise_nom || '—';
+  // 🔑 Utiliser les noms enrichis avec underscore
+  const entrepriseNom = opp._entrepriseNom || '—';
+  const contactNom = opp._contactNom || '—';
   const valeur = formatEuros(opp.valeur_estimee || 0);
 
   card.innerHTML = `
@@ -110,7 +109,7 @@ function createCard(opp) {
   // ⚡ EVENT LISTENER : Click sur la carte
   card.addEventListener('click', (e) => {
     e.stopPropagation();
-    console.log('🖱️ Clic carte:', opp.id);
+    console.log('🖱️ Clic carte:', opp.id, opp.titre);
     openPanel(opp);
   });
 
@@ -119,6 +118,7 @@ function createCard(opp) {
     draggedCardId = parseInt(card.dataset.id);
     card.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
+    console.log('🎯 Drag start:', draggedCardId);
   });
 
   card.addEventListener('dragend', () => {
