@@ -59,7 +59,7 @@ async function loadAllData() {
       contact_principale  : opps.contact_principale?.[i]   || 0,
       statut              : opps.statut?.[i]               || 'Prospect',
       Priorite            : opps.Priorite?.[i]             || 'Moyenne',
-      valeur_estilmee     : opps.valeur_estilmee?.[i]      || 0,
+      valeur_estimee      : opps.valeur_estimee?.[i]       || 0,
       date_closing_estimee: opps.date_closing_estimee?.[i] || 0,
       assignee_a          : opps.assignee_a?.[i]           || 0,
       description         : opps.description?.[i]          || '',
