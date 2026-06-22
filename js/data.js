@@ -40,20 +40,22 @@ async function loadAllData() {
       Structure        : contacts.Structure?.[i]         || 0,
     }));
 
-    allEntreprises = entreprises.id.map((id, i) => ({
-      id,
-      Nom               : entreprises.Nom?.[i]                || '',
-      Siret             : entreprises.Siret?.[i]              || '',
-      Secteur           : entreprises.Secteur?.[i]            || null,
-      Ville             : entreprises.Ville?.[i]              || null,
-      taille            : entreprises.taille?.[i]             || '',
-      site_web_         : entreprises.site_web_?.[i]          || '',
-      Adresse_1         : entreprises.Adresse_1?.[i]          || '',
-      Adresse_2         : entreprises.Adresse_2?.[i]          || '',
-      Adresse_3         : entreprises.Adresse_3?.[i]          || '',
-      CP                : entreprises.CP?.[i]                 || '',
-      Contact_principale: entreprises.Contact_principale?.[i] || null,
-    }));
+allEntreprises = entreprises.id.map((id, i) => ({
+  id,
+  Nom               : entreprises.Nom?.[i]                || '',
+  Siret             : entreprises.Siret?.[i]              || '',
+  Secteur           : entreprises.Secteur?.[i]            || null,
+  Ville             : entreprises.Ville?.[i]              || null,
+  taille            : entreprises.taille?.[i]             || '',
+  site_web_         : entreprises.site_web_?.[i]          || '',
+  Adresse_1         : entreprises.Adresse_1?.[i]          || '',
+  Adresse_2         : entreprises.Adresse_2?.[i]          || '',
+  Adresse_3         : entreprises.Adresse_3?.[i]          || '',
+  CP                : entreprises.CP?.[i]                 || '',
+  Contact_principale: entreprises.Contact_principale?.[i] || null,
+  completion        : entreprises.completion?.[i]         || 0,  // 🆕 AJOUT
+}));
+
 
 allSecteurs = secteurs.id.map((id, i) => ({
   id,
