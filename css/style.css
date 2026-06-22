@@ -1186,3 +1186,10 @@ button {
   margin-left: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+.nav-tab {
+  text-decoration: none;  /* Enlever le soulignement */
+  color: inherit;         /* Garder la couleur */
+  cursor: pointer;
+  display: inline-block;
+}
+
