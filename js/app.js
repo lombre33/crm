@@ -4,7 +4,7 @@
 
 // ── Init ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  loadAllData();
+  initApp();
   initEvents();
   // Affiche le kanban par défaut (vue Opportunités active)
   showKanban();
@@ -121,11 +121,9 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-async function loadAllData() {
+async function initApp() {
   try {
-    await loadOpportunities();
-    await loadContacts();
-    await loadInteractions();  // ← Ajout
+    await loadAllData();  // ← Appelle data.js
     renderKanban();
   } catch (err) {
     console.error('❌ Erreur chargement données:', err);
