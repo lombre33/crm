@@ -25,8 +25,8 @@ async function loadAllData() {
       grist.docApi.fetchTable('Annuaire'),
       grist.docApi.fetchTable('Entreprise'),
       grist.docApi.fetchTable('Interactions'),
-      grist.docApi.fetchTable('Secteur'),      // 🆕
-      grist.docApi.fetchTable('Ville'),        // 🆕
+      grist.docApi.fetchTable('Secteurs'),      // 🆕
+      grist.docApi.fetchTable('Villes'),        // 🆕
     ]);
 
     allContacts = contacts.id.map((id, i) => ({
