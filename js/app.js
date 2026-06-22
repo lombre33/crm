@@ -7,9 +7,32 @@ document.addEventListener('DOMContentLoaded', () => {
   initApp();
   initEvents();
   initNavigation();
+  
   // Affiche le kanban par défaut (vue Opportunités active)
-  showKanban();
+  // ⚠️ Seulement si on est sur index.html
+  if (document.getElementById('kanban-view')) {
+    showKanban();
+  }
 });
+
+// ── Init App ──────────────────────────────────────────
+async function initApp() {
+  try {
+    await loadAllData();      // ← Charge les données
+    
+    // Initialise le dropdown SEULEMENT si on est sur index.html
+    if (typeof initFilterAssignee === 'function') {
+      initFilterAssignee();
+    }
+    
+    // Affiche le kanban SEULEMENT si on est sur index.html
+    if (typeof renderKanban === 'function') {
+      renderKanban();
+    }
+  } catch (err) {
+    console.error('❌ Erreur chargement données:', err);
+  }
+}
 
 // ── Events UI ─────────────────────────────────────────
 function initEvents() {
@@ -32,7 +55,7 @@ function initEvents() {
   document.getElementById('btn-new')
     ?.addEventListener('click', () => showToast('🚧 Bientôt disponible !'));
 
-  // Fermeture modaux
+  // Fermeture modals
   document.getElementById('log-modal')
     ?.addEventListener('click', e => {
       if (e.target === document.getElementById('log-modal'))
@@ -48,8 +71,14 @@ function initEvents() {
 
 // ── Navigation Multi-pages ────────────────────────────
 function initNavigation() {
-  // ✅ Attacher UNE SEULE FOIS sur le parent
-  document.querySelector('.nav-tabs')?.addEventListener('click', (e) => {
+  const navContainer = document.querySelector('.nav-tabs');
+  
+  if (!navContainer) {
+    console.warn('⚠️ .nav-tabs non trouvé');
+    return;
+  }
+  
+  navContainer.addEventListener('click', (e) => {
     const tab = e.target.closest('.nav-tab');
     if (!tab) return;
     
@@ -71,8 +100,6 @@ function initNavigation() {
     }
   });
 }
-
-
 
 // ── Affichage Kanban ──────────────────────────────────
 function showKanban() {
@@ -129,14 +156,4 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-async function initApp() {
-  try {
-    await loadAllData();      // ← Charge les données
-    initFilterAssignee();     // ← Initialise le dropdown
-    renderKanban();           // ← Affiche le kanban
-  } catch (err) {
-    console.error('❌ Erreur chargement données:', err);
-  }
 }
