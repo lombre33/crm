@@ -41,16 +41,8 @@ async function loadAllData() {
       Ville  : entreprises.Ville?.[i]   || '',
     }));
 
-    allInteractions = interactions.id.map((id, i) => ({
-      id,
-      type_interaction: interactions.type_interaction?.[i] || '',
-      Date            : interactions.Date?.[i]             || 0,
-      contact         : interactions.contact?.[i]          || 0,
-      Opportunite     : interactions.Opportunite?.[i]      || 0,
-      Assigne         : interactions.Assigne?.[i]          || 0,
-      contenu         : interactions.contenu?.[i]          || '',
-      duree           : interactions.duree?.[i]            || 0,
-    }));
+    // 🔥 Extraction propre des interactions
+    _parseInteractions(interactions);
 
     allOpportunites = opps.id.map((id, i) => ({
       id,
@@ -83,6 +75,40 @@ async function loadAllData() {
   }
 }
 
+// ════════════════════════════════════════════════════════
+//  HELPER: Parser les interactions (réutilisable)
+// ════════════════════════════════════════════════════════
+function _parseInteractions(rawData) {
+  allInteractions = rawData.id.map((id, i) => ({
+    id,
+    type_interaction: rawData.type_interaction?.[i] || '',
+    Date            : rawData.Date?.[i]             || 0,
+    contact         : rawData.contact?.[i]          || 0,
+    Opportunite     : rawData.Opportunite?.[i]      || 0,
+    Assigne         : rawData.Assigne?.[i]          || 0,
+    contenu         : rawData.contenu?.[i]          || '',
+    duree           : rawData.duree?.[i]            || 0,
+  }));
+}
+
+// ════════════════════════════════════════════════════════
+//  RECHARGER LES INTERACTIONS (après ajout/edit/suppression)
+// ════════════════════════════════════════════════════════
+async function loadInteractions() {
+  try {
+    const rawData = await grist.docApi.fetchTable('Interactions');
+    _parseInteractions(rawData);
+    console.log('✅ Interactions rechargées:', allInteractions.length);
+    return allInteractions;
+  } catch (err) {
+    console.error('❌ Erreur chargement interactions:', err);
+    return [];
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════
 function enrichOpp(opp) {
   const ent = allEntreprises.find(e => e.id === opp.Entreprise);
   opp._entrepriseNom = ent?.Nom || '—';
@@ -96,7 +122,7 @@ function enrichOpp(opp) {
   opp._assigneeNom = assignee
     ? (assignee.nom_prenom || `${assignee.Prenom} ${assignee.Nom}`.trim())
     : '—';
- // 🔍 DEBUG : Affiche les champs de l'opp
+  
   console.log(`📋 Opp ${opp.id}:`, opp);
 }
 
@@ -104,14 +130,4 @@ function getContactNom(id) {
   const c = allContacts.find(c => c.id === id);
   if (!c) return '—';
   return c.nom_prenom || `${c.Prenom} ${c.Nom}`.trim();
-}
-async function loadInteractions() {
-  try {
-    allInteractions = await grist.docApi.fetchTable('Interactions');
-    console.log('✅ Interactions rechargées:', allInteractions.length);
-    return allInteractions;
-  } catch (err) {
-    console.error('❌ Erreur chargement interactions:', err);
-    return [];
-  }
 }
