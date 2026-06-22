@@ -124,6 +124,17 @@ function enrichOpp(opp) {
     : '—';
   
   console.log(`📋 Opp ${opp.id}:`, opp);
+    // 🆕 INITIALES ASSIGNEE
+  if (opp.assignee_a) {
+    // Chercher dans allData.Annuaire
+    const assignee = allData.Annuaire?.find(a => a.id === opp.assignee_a);
+    if (assignee) {
+      const prenom = assignee.Prenom?.charAt(0) || '';
+      const nom = assignee.Nom?.charAt(0) || '';
+      opp._assigneeNom = `${assignee.Prenom} ${assignee.Nom}`;
+      opp._assigneeInitiales = `${prenom}${nom}`.toUpperCase();
+    }
+  }
 }
 
 function getContactNom(id) {
