@@ -43,36 +43,43 @@ function initEnterprisesEvents() {
 //  FILTRES
 // ════════════════════════════════════════════════════════
 function initFilters() {
-  // Remplir dropdowns secteurs
+  // ──────────────────────────────────────────
+  // REMPLIR DROPDOWNS SECTEURS
+  // ──────────────────────────────────────────
   const secteurSelect = document.getElementById('filter-secteur');
-  const villes = [...new Set(allEntreprises.map(e => e.Ville).filter(Boolean))];
-  const secteurs = [...new Set(allEntreprises.map(e => e.Secteur).filter(Boolean))];
-
-  secteurs.forEach(sectId => {
-    const secteur = allSecteurs?.find(s => s.id === sectId);
-    if (secteur) {
+  
+  if (allSecteurs && allSecteurs.length > 0) {
+    allSecteurs.forEach(secteur => {
       const opt = document.createElement('option');
-      opt.value = sectId;
-      opt.textContent = secteur.nom || `Secteur ${sectId}`;
+      opt.value = secteur.id;
+      opt.textContent = secteur.nom || `Secteur ${secteur.id}`;
       secteurSelect.appendChild(opt);
-    }
-  });
+    });
+  }
 
-  // Remplir dropdowns villes
+  // ──────────────────────────────────────────
+  // REMPLIR DROPDOWNS VILLES
+  // ──────────────────────────────────────────
   const villeSelect = document.getElementById('filter-ville');
- villes.forEach(ville => {
-  const opt = document.createElement('option');
-  opt.value = ville.id;        // ✅ ID en value
-  opt.textContent = ville.nom; // ✅ Nom affiché
-  villeSelect.appendChild(opt);
-});
+  
+  if (allVilles && allVilles.length > 0) {
+    allVilles.forEach(ville => {
+      const opt = document.createElement('option');
+      opt.value = ville.id;        // ✅ ID de la ville
+      opt.textContent = ville.nom; // ✅ Nom de la ville
+      villeSelect.appendChild(opt);
+    });
+  }
 
-  // Events filtres
+  // ──────────────────────────────────────────
+  // EVENTS FILTRES
+  // ──────────────────────────────────────────
   document.getElementById('filter-search')?.addEventListener('input', applyFilters);
   document.getElementById('filter-secteur')?.addEventListener('change', applyFilters);
   document.getElementById('filter-ville')?.addEventListener('change', applyFilters);
   document.getElementById('filter-taille')?.addEventListener('change', applyFilters);
 }
+
 
 function applyFilters() {
   const search = document.getElementById('filter-search')?.value.toLowerCase() || '';
