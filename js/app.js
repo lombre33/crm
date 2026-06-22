@@ -130,5 +130,9 @@ async function initApp() {
     console.error('❌ Erreur chargement données:', err);
   }
 }
-
+document.querySelector('[data-view="entreprises"]')
+  ?.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = 'enterprises.html';
+  });
 
