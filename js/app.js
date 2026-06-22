@@ -1,31 +1,26 @@
 // ════════════════════════════════════════════════════════
 //  APP — Init + Events UI + Utilitaires
 // ════════════════════════════════════════════════════════
+
 // ── Init ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  loadAllData();        // ← Force le rechargement
-  initApp();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadAllData();  // ← Attendre que les données se chargent
+  await initApp();
   initEvents();
   
   if (document.getElementById('kanban-view')) {
-    showKanban();
+    renderKanban();     // ← Maintenant les données EXISTENT
   }
 });
 
 // ── Init App ──────────────────────────────────────────
 async function initApp() {
   try {
-    // Les données sont déjà chargées au-dessus
-    
     if (typeof initFilterAssignee === 'function') {
       initFilterAssignee();
     }
-    
-    if (typeof renderKanban === 'function') {
-      renderKanban();
-    }
   } catch (err) {
-    console.error('❌ Erreur chargement données:', err);
+    console.error('❌ Erreur initApp:', err);
   }
 }
 
@@ -94,22 +89,6 @@ function initNavigation() {
       window.location.href = targetPage;
     }
   });
-}
-
-// ── Affichage Kanban ──────────────────────────────────
-function showKanban() {
-  const kanban = document.getElementById('kanban-view');
-  if (kanban) {
-    kanban.classList.add('active');
-  }
-  document.querySelectorAll('.placeholder-view').forEach(pv => pv.classList.remove('active'));
-}
-
-function hideKanban() {
-  const kanban = document.getElementById('kanban-view');
-  if (kanban) {
-    kanban.classList.remove('active');
-  }
 }
 
 // ════════════════════════════════════════════════════════
