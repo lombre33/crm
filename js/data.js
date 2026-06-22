@@ -40,36 +40,34 @@ async function loadAllData() {
       Structure        : contacts.Structure?.[i]         || 0,
     }));
 
-allEntreprises = entreprises.id.map((id, i) => ({
-  id,
-  Nom               : entreprises.Nom?.[i]                || '',
-  Siret             : entreprises.Siret?.[i]              || '',
-  Secteur           : entreprises.Secteur?.[i]            || null,
-  Ville             : entreprises.Ville?.[i]              || null,
-  taille            : entreprises.taille?.[i]             || '',
-  site_web_         : entreprises.site_web_?.[i]          || '',
-  Adresse_1         : entreprises.Adresse_1?.[i]          || '',
-  Adresse_2         : entreprises.Adresse_2?.[i]          || '',
-  Adresse_3         : entreprises.Adresse_3?.[i]          || '',
-  CP                : entreprises.CP?.[i]                 || '',
-  Contact_principale: entreprises.Contact_principale?.[i] || null,
-  completion        : entreprises.completion?.[i]         || 0,  // 🆕 AJOUT
-}));
+    allEntreprises = entreprises.id.map((id, i) => ({
+      id,
+      Nom               : entreprises.Nom?.[i]                || '',
+      Siret             : entreprises.Siret?.[i]              || '',
+      Secteur           : entreprises.Secteur?.[i]            || null,
+      Ville             : entreprises.Ville?.[i]              || null,
+      taille            : entreprises.taille?.[i]             || '',
+      site_web_         : entreprises.site_web_?.[i]          || '',
+      Adresse_1         : entreprises.Adresse_1?.[i]          || '',
+      Adresse_2         : entreprises.Adresse_2?.[i]          || '',
+      Adresse_3         : entreprises.Adresse_3?.[i]          || '',
+      CP                : entreprises.CP?.[i]                 || '',
+      Contact_principale: entreprises.Contact_principale?.[i] || null,
+      completion        : entreprises.completion?.[i]         || 0,
+    }));
 
+    allSecteurs = secteurs.id.map((id, i) => ({
+      id,
+      nom: secteurs.nom?.[i] || '',
+    }));
 
-allSecteurs = secteurs.id.map((id, i) => ({
-  id,
-  nom: secteurs.nom?.[i] || '',
-}));
+    allVilles = villes.id.map((id, i) => ({
+      id,
+      nom: villes.nom?.[i] || '',
+    }));
 
-allVilles = villes.id.map((id, i) => ({
-  id,
-  nom: villes.nom?.[i] || '',
-}));
-
-    // 🔥 Extraction propre des interactions
+    // 🔥 Parser les interactions
     _parseInteractions(interactions);
-    enrichAllInteractions();
 
     allOpportunites = opps.id.map((id, i) => ({
       id,
@@ -84,8 +82,11 @@ allVilles = villes.id.map((id, i) => ({
       description         : opps.description?.[i]          || '',
     }));
 
-    // Enrichissement des noms
+    // ✅ Enrichissement des opps EN PREMIER
     allOpportunites.forEach(opp => enrichOpp(opp));
+
+    // ✅ PUIS enrichissement des interactions (dépend des opps enrichies)
+    enrichAllInteractions();
 
     console.log('✅ Données chargées:', {
       opps: allOpportunites.length,
@@ -97,7 +98,6 @@ allVilles = villes.id.map((id, i) => ({
     });
 
     gristReady = true;
-  //  renderKanban();
 
   } catch(e) {
     console.error('❌ Erreur chargement données:', e);
@@ -105,7 +105,7 @@ allVilles = villes.id.map((id, i) => ({
 }
 
 // ════════════════════════════════════════════════════════
-//  HELPER: Parser les interactions (réutilisable)
+//  HELPER: Parser les interactions
 // ════════════════════════════════════════════════════════
 function _parseInteractions(rawData) {
   allInteractions = rawData.id.map((id, i) => ({
@@ -121,12 +121,39 @@ function _parseInteractions(rawData) {
 }
 
 // ════════════════════════════════════════════════════════
-//  RECHARGER LES INTERACTIONS (après ajout/edit/suppression)
+//  ENRICHIR TOUTES LES INTERACTIONS
+// ════════════════════════════════════════════════════════
+function enrichAllInteractions() {
+  allInteractions.forEach(inter => {
+    // ✅ Contact
+    const contact = allContacts.find(c => c.id === inter.contact);
+    inter._contactNom = contact
+      ? (contact.nom_prenom || `${contact.Prenom || ''} ${contact.Nom || ''}`.trim() || '—')
+      : '—';
+
+    // ✅ Assignee
+    const assignee = allContacts.find(c => c.id === inter.Assigne);
+    inter._assigneeNom = assignee
+      ? (assignee.nom_prenom || `${assignee.Prenom || ''} ${assignee.Nom || ''}`.trim() || '—')
+      : '—';
+
+    // ✅ Opportunité (et son entreprise)
+    const opp = allOpportunites.find(o => o.id === inter.Opportunite);
+    inter._opportuniteTitre = opp?.titre || '—';
+    inter._entrepriseNom = opp?._entrepriseNom || '—';
+  });
+
+  console.log('✅ Interactions enrichies');
+}
+
+// ════════════════════════════════════════════════════════
+//  RECHARGER LES INTERACTIONS
 // ════════════════════════════════════════════════════════
 async function loadInteractions() {
   try {
     const rawData = await grist.docApi.fetchTable('Interactions');
     _parseInteractions(rawData);
+    enrichAllInteractions();
     console.log('✅ Interactions rechargées:', allInteractions.length);
     return allInteractions;
   } catch (err) {
@@ -149,14 +176,13 @@ function enrichOpp(opp) {
     ? (contact.nom_prenom || `${contact.Prenom} ${contact.Nom}`.trim())
     : '—';
 
-  // ✅ ASSIGNEE — Nettoyé
+  // ✅ ASSIGNEE
   if (opp.assignee_a) {
     const assignee = allContacts.find(c => c.id === opp.assignee_a);
     
     if (assignee) {
       opp._assigneeNom = assignee.nom_prenom || `${assignee.Prenom} ${assignee.Nom}`.trim();
       
-      // 🆕 INITIALES
       const prenom = (assignee.Prenom || '').charAt(0).toUpperCase();
       const nom = (assignee.Nom || '').charAt(0).toUpperCase();
       opp._assigneeInitiales = `${prenom}${nom}`;
@@ -170,33 +196,8 @@ function enrichOpp(opp) {
   }
 }
 
-
 function getContactNom(id) {
   const c = allContacts.find(c => c.id === id);
   if (!c) return '—';
   return c.nom_prenom || `${c.Prenom} ${c.Nom}`.trim();
-}
-
-// ════════════════════════════════════════════════════════
-//  ENRICHIR LES INTERACTIONS (après chargement)
-// ════════════════════════════════════════════════════════
-function enrichAllInteractions() {
-  allInteractions.forEach(inter => {
-    // ✅ Contact
-    const contact = allContacts.find(c => c.id === inter.contact);
-    inter._contactNom = contact
-      ? (contact.nom_prenom || `${contact.Prenom} ${contact.Nom}`.trim())
-      : '—';
-
-    // ✅ Assignee
-    const assignee = allContacts.find(c => c.id === inter.Assigne);
-    inter._assigneeNom = assignee
-      ? (assignee.nom_prenom || `${assignee.Prenom} ${assignee.Nom}`.trim())
-      : '—';
-
-    // ✅ Opportunité (et son entreprise)
-    const opp = allOpportunites.find(o => o.id === inter.Opportunite);
-    inter._opportuniteTitre = opp?.titre || '—';
-    inter._entrepriseNom = opp?._entrepriseNom || '—';
-  });
 }
