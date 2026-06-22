@@ -787,6 +787,13 @@ button {
   gap: 12px;
   padding: 10px 0;
   position: relative;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  padding: 12px;
+}
+.timeline-item:hover {
+  background: rgba(59, 130, 246, 0.08) !important;
+  transform: translateX(4px);
 }
 
 .timeline-item:not(:last-child)::after {
