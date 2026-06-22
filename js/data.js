@@ -98,7 +98,6 @@ function enrichOpp(opp) {
     : '—';
  // 🔍 DEBUG : Affiche les champs de l'opp
   console.log(`📋 Opp ${opp.id}:`, opp);
-  });
 }
 
 function getContactNom(id) {
