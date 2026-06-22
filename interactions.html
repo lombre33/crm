@@ -7,6 +7,7 @@
   <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/interactions-page.css">
   <style>
     /* ── INTERACTIONS PAGE ─────────────────────────────────── */
     .interactions-container {
@@ -243,11 +244,20 @@
       background: #f8fafc;
     }
 
+    .panel-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: #1e293b;
+    }
+
     .panel-close {
       font-size: 20px;
       cursor: pointer;
       color: #64748b;
       transition: color 0.2s;
+      background: none;
+      border: none;
+      padding: 0;
     }
 
     .panel-close:hover {
@@ -338,6 +348,146 @@
       background: #fee2e2;
       border-color: #fca5a5;
     }
+
+    /* ── MODAL (override style.css si besoin) ────────────── */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+    }
+
+    .modal-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: #1e293b;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #64748b;
+      padding: 0;
+      transition: color 0.2s;
+    }
+
+    .modal-close:hover {
+      color: #1e293b;
+    }
+
+    #interaction-edit-body {
+      padding: 20px;
+    }
+
+    .modal-field {
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .modal-field label {
+      font-weight: 600;
+      font-size: 12px;
+      color: #1e293b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .modal-field input,
+    .modal-field select,
+    .modal-field textarea {
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .modal-field input:focus,
+    .modal-field select:focus,
+    .modal-field textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .modal-field textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-modal-save,
+    .btn-modal-cancel {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.15s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-modal-save {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-modal-save:hover {
+      background: #059669;
+    }
+
+    .btn-modal-cancel {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+
+    .btn-modal-cancel:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
   </style>
 </head>
 <body>
@@ -374,10 +524,6 @@
       <label for="filter-type">Type :</label>
       <select id="filter-type">
         <option value="">Tous</option>
-        <option value="Appel">📞 Appel</option>
-        <option value="Email">📧 Email</option>
-        <option value="Réunion">🤝 Réunion</option>
-        <option value="Note">📝 Note</option>
       </select>
     </div>
 
@@ -407,7 +553,7 @@
       <input type="date" id="filter-date">
     </div>
 
-    <button class="btn-reset-filters" onclick="resetInteractionFilters()">🔄 Réinitialiser</button>
+    <button class="btn-reset-filters" id="btn-reset-interactions">🔄 Réinitialiser</button>
   </div>
 
   <!-- TIMELINE -->
@@ -426,7 +572,7 @@
 <div class="interactions-panel" id="interactions-panel">
   <div class="panel-header">
     <div class="panel-title" id="panel-title">Interaction</div>
-    <div class="panel-close" onclick="closeInteractionsPanel()">✕</div>
+    <button class="panel-close" id="close-interactions-panel" onclick="closeInteractionsPanel()">✕</button>
   </div>
   <div class="panel-body" id="panel-body">
     <!-- Contenu généré dynamiquement -->
@@ -440,11 +586,67 @@
   <div class="modal-box">
     <div class="modal-header">
       <div class="modal-title">Modifier l'interaction</div>
-      <button class="modal-close" onclick="closeInteractionEditModal()">✕</button>
+      <button class="modal-close" id="close-edit-inter" onclick="closeInteractionEditModal()">✕</button>
     </div>
-    <div id="interaction-edit-body"></div>
+    <div id="interaction-edit-body">
+      <div class="modal-field">
+        <label for="edit-inter-type">Type</label>
+        <select id="edit-inter-type">
+          <option value="Appel">📞 Appel</option>
+          <option value="Email">📧 Email</option>
+          <option value="Réunion">🤝 Réunion</option>
+          <option value="Note">📝 Note</option>
+        </select>
+      </div>
+
+      <div class="modal-field">
+        <label for="edit-inter-date">Date</label>
+        <input type="date" id="edit-inter-date">
+      </div>
+
+      <div class="modal-field">
+        <label for="edit-inter-contact">Contact</label>
+        <select id="edit-inter-contact">
+          <option value="">Sélectionner...</option>
+        </select>
+      </div>
+
+      <div class="modal-field">
+        <label for="edit-inter-opp">Opportunité</label>
+        <select id="edit-inter-opp">
+          <option value="">Sélectionner...</option>
+        </select>
+      </div>
+
+      <div class="modal-field">
+        <label for="edit-inter-assignee">Assigné à</label>
+        <select id="edit-inter-assignee">
+          <option value="">Sélectionner...</option>
+        </select>
+      </div>
+
+      <div class="modal-field">
+        <label for="edit-inter-duree">Durée (minutes)</label>
+        <input type="number" id="edit-inter-duree">
+      </div>
+
+      <div class="modal-field">
+        <label for="edit-inter-contenu">Contenu</label>
+        <textarea id="edit-inter-contenu" placeholder="Décrivez le contenu de l'interaction..."></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-modal-save" id="save-inter-btn">💾 Sauvegarder</button>
+        <button class="btn-modal-cancel" id="close-edit-inter-btn">✕ Annuler</button>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- ════════════════════════════════════════════════════════
+     OVERLAY (pour panel)
+     ════════════════════════════════════════════════════════ -->
+<div class="overlay" id="overlay-interactions"></div>
 
 <!-- ════════════════════════════════════════════════════════
      TOAST
