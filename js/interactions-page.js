@@ -628,3 +628,30 @@ function getInteractionIcon(type) {
   };
   return icons[type] || '💬';
 }
+// ════════════════════════════════════════════════════════
+//  EVENTS
+// ════════════════════════════════════════════════════════
+function initInteractionsPageEvents() {
+  console.log('🔗 Initialisation des events...');
+
+  // Filtres
+  document.getElementById('filter-type')?.addEventListener('change', applyInteractionFilters);
+  document.getElementById('filter-contact')?.addEventListener('change', applyInteractionFilters);
+  document.getElementById('filter-entreprise')?.addEventListener('change', applyInteractionFilters);
+  document.getElementById('filter-assignee')?.addEventListener('change', applyInteractionFilters);
+  document.getElementById('filter-date')?.addEventListener('change', applyInteractionFilters);
+
+  // Reset
+  document.getElementById('btn-reset-interactions')?.addEventListener('click', resetInteractionFilters);
+
+  // Modal edit
+  document.getElementById('close-edit-inter')?.addEventListener('click', closeInteractionEditModal);
+  document.getElementById('save-inter-btn')?.addEventListener('click', saveInteractionEdit);
+
+  // Panel
+  document.getElementById('overlay-interactions')?.addEventListener('click', closeInteractionsPanel);
+  document.getElementById('close-interactions-panel')?.addEventListener('click', closeInteractionsPanel);
+
+  console.log('✅ Events initialisés');
+}
+
