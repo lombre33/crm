@@ -79,7 +79,7 @@ function initInteractionFilters() {
     console.log('✅ Dropdown Contacts rempli:', uniqueContacts.length);
   }
 
-  // ──────────────────────────────────────────
+   // ──────────────────────────────────────────
   // ENTREPRISES (via les opps)
   // ──────────────────────────────────────────
   const entrepriseSelect = document.getElementById('filter-entreprise');
@@ -95,6 +95,7 @@ function initInteractionFilters() {
         const opp = allOpportunites.find(o => o.id === oppId);
         if (!opp) return null;
 
+        // ✅ CORRIGÉ : allEntreprises (avec s)
         const entreprise = allEntreprises.find(e => e.id === opp.Entreprise);
         const entrepriseNom = entreprise?.Nom || opp._entrepriseNom || '—';
 
@@ -106,7 +107,6 @@ function initInteractionFilters() {
         };
       })
       .filter(e => e !== null)
-      // Unique par entrepriseId
       .filter((e, idx, arr) => arr.findIndex(x => x.entrepriseId === e.entrepriseId) === idx);
 
     uniqueEnterprises.sort((a, b) => a.entrepriseNom.localeCompare(b.entrepriseNom));
@@ -119,6 +119,7 @@ function initInteractionFilters() {
     });
     console.log('✅ Dropdown Entreprises rempli:', uniqueEnterprises.length);
   }
+
 
   // ──────────────────────────────────────────
   // ASSIGNÉS (unique dans les interactions)
