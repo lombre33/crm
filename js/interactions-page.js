@@ -205,7 +205,7 @@ function applyInteractionFilters() {
 //  RENDER TIMELINE
 // ════════════════════════════════════════════════════════
 function renderInteractionsTimeline() {
-  const container = document.getElementById('interactions-timeline-container');
+  const container = document.getElementById('interactions-timeline');
   if (!container) return;
 
   if (filteredInteractions.length === 0) {
