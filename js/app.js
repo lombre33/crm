@@ -47,28 +47,37 @@ function initEvents() {
 }
 
 // ── Navigation Multi-pages ────────────────────────────
+// ── Navigation Multi-pages ────────────────────────────
 function initNavigation() {
   document.querySelectorAll('.nav-tab').forEach(tab => {
-    tab.addEventListener('click', (e) => {
-      e.preventDefault();
-      const view = tab.dataset.view;
-      
-      const pages = {
-        'opportunites': 'index.html',
-        'entreprises': 'enterprises.html',
-        'contacts': 'contacts.html',
-        'dashboard': 'dashboard.html',
-        'interactions': 'interactions.html',
-        'evenements': 'evenements.html'
-      };
-
-      const targetPage = pages[view];
-      if (targetPage) {
-        window.location.href = targetPage;
-      }
-    });
+    // ✅ Détache d'abord l'ancien listener
+    tab.removeEventListener('click', handleNavClick);
+    // ✅ Attache le nouveau
+    tab.addEventListener('click', handleNavClick);
   });
 }
+
+// ✅ Fonction séparée pour la navigation
+function handleNavClick(e) {
+  e.preventDefault();
+  const tab = this;
+  const view = tab.dataset.view;
+  
+  const pages = {
+    'opportunites': 'index.html',
+    'entreprises': 'enterprises.html',
+    'contacts': 'contacts.html',
+    'dashboard': 'dashboard.html',
+    'interactions': 'interactions.html',
+    'evenements': 'evenements.html'
+  };
+
+  const targetPage = pages[view];
+  if (targetPage) {
+    window.location.href = targetPage;
+  }
+}
+
 
 // ── Affichage Kanban ──────────────────────────────────
 function showKanban() {
