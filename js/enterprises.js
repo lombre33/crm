@@ -16,24 +16,27 @@ const COMPLETION_CONFIG = {
   required: ['Nom', 'Secteur', 'Ville'], // = 100%
   optional: ['site_web_', 'Adresse_1', 'CP', 'Contact_principale', 'Siret'] // bonus
 };
-
 function calculateCompletion(ent) {
-  // Vérifier champs requis
+  // Si la valeur vient de Grist (0-10), la convertir en pourcentage (0-100)
+  if (ent.completion !== null && ent.completion !== undefined) {
+    return Math.round((ent.completion / 10) * 100);
+  }
+
+  // Sinon, calculer à partir des champs (ancien système)
   const requiredFilled = COMPLETION_CONFIG.required.filter(field => 
     ent[field] && String(ent[field]).trim()
   ).length;
   
-  // Vérifier champs optionnels
   const optionalFilled = COMPLETION_CONFIG.optional.filter(field => 
     ent[field] && String(ent[field]).trim()
   ).length;
   
-  // Calcul : 70% requis + 30% optionnels
   const requiredPercent = (requiredFilled / COMPLETION_CONFIG.required.length) * 70;
   const optionalPercent = (optionalFilled / COMPLETION_CONFIG.optional.length) * 30;
   
   return Math.round(requiredPercent + optionalPercent);
 }
+
 
 function getGradientStops(completion) {
   // Gradient dynamique selon la complétude
