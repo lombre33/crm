@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM PUI - Module Entreprises</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            background: #fff;
+        }
+
+        /* ════════════════════════════════════════════════════════
+           MAIN CONTENT
+           ════════════════════════════════════════════════════════ */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e0e0e0;
+            background: #fff;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .btn-primary {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+        }
+
+        /* ════════════════════════════════════════════════════════
+           FILTRES HORIZONTAUX
+           ════════════════════════════════════════════════════════ */
+        .filters-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 0;
+            margin: 0;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #666;
+        }
+
+        /* ════════════════════════════════════════════════════════
+           SEARCH INPUT
+           ════════════════════════════════════════════════════════ */
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 200px;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        /* ════════════════════════════════════════════════════════
+           MULTI-SELECT DROPDOWN
+           ════════════════════════════════════════════════════════ */
+        .multi-select-wrapper {
+            position: relative;
+            min-width: 180px;
+        }
+
+        .multi-select-button {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .multi-select-button:hover {
+            border-color: #4CAF50;
+        }
+
+        .multi-select-button.active {
+            border-color: #4CAF50;
+            background: #f0f8f5;
+        }
+
+        .multi-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 10;
+            min-width: 220px;
+            display: none;
+            margin-top: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .multi-select-dropdown.open {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: #f5f5f5;
+        }
+
+        .dropdown-item input[type="checkbox"] {
+            cursor: pointer;
+            accent-color: #4CAF50;
+        }
+
+        .dropdown-item label {
+            margin: 0;
+            cursor: pointer;
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .tags-container {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            background: #e8f5e9;
+            border: 1px solid #4CAF50;
+            border-radius: 12px;
+            color: #2e7d32;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .filter-tag button {
+            background: none;
+            border: none;
+            color: #2e7d32;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-tag button:hover {
+            opacity: 0.7;
+        }
+
+        /* ════════════════════════════════════════════════════════
+           SLIDER
+           ════════════════════════════════════════════════════════ */
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 220px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            accent-color: #4CAF50;
+        }
+
+        .slider-value {
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 45px;
+            text-align: right;
+        }
+
+        /* ════════════════════════════════════════════════════════
+           TABLEAU ENTREPRISES
+           ════════════════════════════════════════════════════════ */
+        .content-area {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .table-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: #f9f9f9;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #666;
+            border-right: 1px solid #f0f0f0;
+        }
+
+        th:last-child {
+            border-right: none;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            border-right: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        td:last-child {
+            border-right: none;
+        }
+
+        tbody tr {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        /* Colonnes */
+        .col-nom {
+            font-weight: 600;
+            color: #333;
+            min-width: 150px;
+        }
+
+        .col-secteur {
+            color: #666;
+            min-width: 100px;
+        }
+
+        .col-ville {
+            color: #666;
+            min-width: 100px;
+        }
+
+        .col-contacts {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .col-opps {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .col-montant {
+            text-align: right;
+            min-width: 100px;
+            font-weight: 600;
+            color: #4CAF50;
+        }
+
+        .col-actions {
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .btn-action {
+            padding: 4px 8px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 0 2px;
+        }
+
+        .btn-action:hover {
+            background: #4CAF50;
+            color: #fff;
+            border-color: #4CAF50;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* ════════════════════════════════════════════════════════
+           SIDE PANEL (Détail Entreprise)
+           ════════════════════════════════════════════════════════ */
+        .side-panel {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 450px;
+            height: 100vh;
+            background: #fff;
+            border-left: 1px solid #e0e0e0;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+            flex-direction: column;
+        }
+
+        .side-panel.open {
+            display: flex;
+        }
+
+        .panel-header {
+            padding: 24px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+
+        .panel-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .panel-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-close:hover {
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .btn-edit {
+            padding: 6px 12px;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .panel-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .info-item {
+            display: flex;
+            gap: 8px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            min-width: 80px;
+        }
+
+        .info-value {
+            color: #333;
+        }
+
+        .panel-section {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .panel-section h3 {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .contact-item,
+        .opp-item,
+        .interaction-item {
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border-left: 3px solid #4CAF50;
+            font-size: 13px;
+        }
+
+        .contact-item .name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .contact-item .role {
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .contact-item .contact-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .opp-item .title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .opp-item .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            background: #e3f2fd;
+            color: #1976d2;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .opp-item .opp-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .interaction-item {
+            border-left-color: #ff9800;
+        }
+
+        .interaction-item .type {
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .interaction-item .date {
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .interaction-item .content {
+            color: #666;
+            font-size: 12px;
+            padding: 6px;
+            background: #fff;
+            border-radius: 4px;
+            max-height: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .interaction-item .meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #999;
+            margin-top: 6px;
+        }
+
+        .see-more-btn {
+            padding: 6px 12px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            align-self: flex-start;
+        }
+
+        .see-more-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .empty-section {
+            padding: 24px;
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+        }
+
+        /* ════════════════════════════════════════════════════════
+           MODAL EDIT
+           ════════════════════════════════════════════════════════ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* ════════════════════════════════════════════════════════
+           RESPONSIVE
+           ════════════════════════════════════════════════════════ */
+        @media (max-width: 1024px) {
+            .filters-row {
+                gap: 8px;
+            }
+
+            .multi-select-wrapper {
+                min-width: 150px;
+            }
+
+            .side-panel {
+                width: 380px;
+            }
+
+            th, td {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 12px 16px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .filters-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            .search-input {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .multi-select-wrapper {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .slider-group {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .side-panel {
+                width: 100%;
+                box-shadow: -1px 0 4px rgba(0,0,0,0.1);
+            }
+
+            .col-actions {
+                min-width: 80px;
+            }
+
+            .btn-action {
+                padding: 3px 6px;
+                font-size: 11px;
+            }
+
+            th, td {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ════════════════════════════════════════════════════════
+             MAIN CONTENT
+             ════════════════════════════════════════════════════════ -->
+        <div class="main-content">
+            <!-- HEADER -->
+            <div class="header">
+                <div class="header-top">
+                    <h1>🏢 Entreprises</h1>
+                    <button class="btn-primary">+ Ajouter</button>
+                </div>
+
+                <!-- FILTRES HORIZONTAUX -->
+                <div class="filters-row">
+                    <!-- Recherche -->
+                    <div class="filter-group" style="flex: 1; min-width: 200px;">
+                        <input type="text" class="search-input" placeholder="🔍 Rechercher une entreprise..." id="searchInput">
+                    </div>
+
+                    <!-- Secteur Multi-Select -->
+                    <div class="filter-group">
+                        <span class="filter-label">Secteur</span>
+                        <div class="multi-select-wrapper" id="sectorFilter">
+                            <button class="multi-select-button" id="sectorBtn">
+                                📋 Tous
+                                <span style="margin-left: auto; font-size: 12px;">▼</span>
+                            </button>
+                            <div class="multi-select-dropdown" id="sectorDropdown">
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="sector-tech" value="Tech">
+                                    <label for="sector-tech">Tech</label>
+                                </div>
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="sector-finance" value="Finance">
+                                    <label for="sector-finance">Finance</label>
+                                </div>
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="sector-digital" value="Digital">
+                                    <label for="sector-digital">Digital</label>
+                                </div>
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="sector-conseil" value="Conseil">
+                                    <label for="sector-conseil">Conseil</label>
+                                </div>
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="sector-retail" value="Retail">
+                                    <label for="sector-retail">Retail</label>
+                                </div>
+                            </div>
+                            <div class="tags-container" id="sectorTags" style="margin-top: 8px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Ville Multi-Select -->
+                    <div class="filter-group">
+                        <span class="filter-label">Ville</span>
+                        <div class="multi-select-wrapper" id="cityFilter">
+                            <button class="multi-select-button" id="cityBtn">
+                                📍 Tous
+                                <span style="margin-left: auto; font-size: 12px;">▼</span>
+                            </button>
+                            <div class="multi-select-dropdown" id="cityDropdown">
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="city-paris" value="Paris">
+                                    <label for="city-paris">Paris</label>
+                                </div>
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="city-lyon" value="Lyon">
+                                    <label for="city-lyon">Lyon</label>
+                                </div>
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="city-bordeaux" value="Bordeaux">
+                                    <label for="city-bordeaux">Bordeaux</label>
+                                </div>
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="city-marseille" value="Marseille">
+                                    <label for="city-marseille">Marseille</label>
+                                </div>
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="city-toulouse" value="Toulouse">
+                                    <label for="city-toulouse">Toulouse</label>
+                                </div>
+                            </div>
+                            <div class="tags-container" id="cityTags" style="margin-top: 8px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Slider Nb Opps -->
+                    <div class="filter-group">
+                        <span class="filter-label">Opps min</span>
+                        <div class="slider-group">
+                            <input type="range" id="oppSlider" min="0" max="20" value="0">
+                            <span class="slider-value" id="sliderValue">0+</span>
+                        </div>
+                    </div>
+
+                    <!-- Reset -->
+                    <button class="btn-secondary" id="resetFilters" style="height: 36px;">Réinit.</button>
+                </div>
+            </div>
+
+            <!-- CONTENU TABLEAU -->
+            <div class="content-area">
+                <div class="table-wrapper">
+                    <table id="entreprisesTable">
+                        <thead>
+                            <tr>
+                                <th class="col-nom">Entreprise</th>
+                                <th class="col-secteur">Secteur</th>
+                                <th class="col-ville">Ville</th>
+                                <th class="col-contacts">👥 Contacts</th>
+                                <th class="col-opps">📊 Opps</th>
+                                <th class="col-montant">💰 Montant</th>
+                                <th class="col-actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr data-id="1">
+                                <td class="col-nom">Startup XYZ</td>
+                                <td class="col-secteur">Tech</td>
+                                <td class="col-ville">Paris</td>
+                                <td class="col-contacts">12</td>
+                                <td class="col-opps">8</td>
+                                <td class="col-montant">1 200 000€</td>
+                                <td class="col-actions">
+                                    <button class="btn-action btn-view">📋</button>
+                                    <button class="btn-action btn-edit">✏️</button>
+                                </td>
+                            </tr>
+                            <tr data-id="2">
+                                <td class="col-nom">Digital ABC</td>
+                                <td class="col-secteur">Digital</td>
+                                <td class="col-ville">Lyon</td>
+                                <td class="col-contacts">8</td>
+                                <td class="col-opps">5</td>
+                                <td class="col-montant">450 000€</td>
+                                <td class="col-actions">
+                                    <button class="btn-action btn-view">📋</button>
+                                    <button class="btn-action btn-edit">✏️</button>
+                                </td>
+                            </tr>
+                            <tr data-id="3">
+                                <td class="col-nom">Finance DEF</td>
+                                <td class="col-secteur">Finance</td>
+                                <td class="col-ville">Bordeaux</td>
+                                <td class="col-contacts">15</td>
+                                <td class="col-opps">12</td>
+                                <td class="col-montant">2 100 000€</td>
+                                <td class="col-actions">
+                                    <button class="btn-action btn-view">📋</button>
+                                    <button class="btn-action btn-edit">✏️</button>
+                                </td>
+                            </tr>
+                            <tr data-id="4">
+                                <td class="col-nom">Conseil GHI</td>
+                                <td class="col-secteur">Conseil</td>
+                                <td class="col-ville">Paris</td>
+                                <td class="col-contacts">6</td>
+                                <td class="col-opps">3</td>
+                                <td class="col-montant">280 000€</td>
+                                <td class="col-actions">
+                                    <button class="btn-action btn-view">📋</button>
+                                    <button class="btn-action btn-edit">✏️</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════
+             SIDE PANEL (Détail Entreprise)
+             ════════════════════════════════════════════════════════ -->
+        <div class="side-panel" id="sidePanel">
+            <div class="panel-header">
+                <div class="panel-header-top">
+                    <div class="panel-title" id="panelTitle">Startup XYZ</div>
+                    <button class="btn-close" id="closePanelBtn">✕</button>
+                </div>
+                <button class="btn-edit" id="editBtn">✏️ Modifier</button>
+            </div>
+
+            <!-- Infos Entreprise -->
+            <div class="panel-section">
+                <div class="panel-info">
+                    <div class="info-item">
+                        <div class="info-label">Secteur</div>
+                        <div class="info-value" id="panelSecteur">Tech</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Ville</div>
+                        <div class="info-value" id="panelVille">Paris</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Site</div>
+                        <div class="info-value"><a href="#" id="panelSite">example.com</a></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Téléphone</div>
+                        <div class="info-value" id="panelTel">+33 1 23 45 67</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="panel-section">
+                <h3>📊 Stats</h3>
+                <div class="section-content" style="display: flex; gap: 16px;">
+                    <div style="flex: 1; padding: 12px; background: #f9f9f9; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 18px; font-weight: 700; color: #333;" id="statContacts">12</div>
+                        <div style="font-size: 12px; color: #999; text-transform: uppercase;">Contacts</div>
+                    </div>
+                    <div style="flex: 1; padding: 12px; background: #f9f9f9; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 18px; font-weight: 700; color: #333;" id="statOpps">8</div>
+                        <div style="font-size: 12px; color: #999; text-transform: uppercase;">Opps</div>
+                    </div>
+                    <div style="flex: 1; padding: 12px; background: #f9f9f9; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 18px; font-weight: 700; color: #333;" id="statMontant">1.2M€</div>
+                        <div style="font-size: 12px; color: #999; text-transform: uppercase;">Montant</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contacts -->
+            <div class="panel-section">
+                <h3>👥 Contacts</h3>
+                <div class="section-content" id="contactsList">
+                    <div class="contact-item">
+                        <div class="name">Jean Dupont</div>
+                        <div class="role">Manager</div>
+                        <div class="contact-details">
+                            <div>📧 jean@startup.com</div>
+                            <div>📱 06 12 34 56 78</div>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="name">Marie Martin</div>
+                        <div class="role">Développeuse</div>
+                        <div class="contact-details">
+                            <div>📧 marie@startup.com</div>
+                            <div>📱 06 87 65 43 21</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="see-more-btn">Voir tous les contacts</button>
+            </div>
+
+            <!-- Opportunités -->
+            <div class="panel-section">
+                <h3>📈 Opportunités</h3>
+                <div class="section-content" id="oppsList">
+                    <div class="opp-item">
+                        <div class="title">
+                            Migration Cloud
+                            <span class="status-badge">Prospect</span>
+                        </div>
+                        <div class="opp-details">
+                            <div>💰 450 000€</div>
+                            <div>⏰ Closing: 30/06/2026</div>
+                        </div>
+                    </div>
+                    <div class="opp-item">
+                        <div class="title">
+                            Audit Sécurité
+                            <span class="status-badge" style="background: #f3e5f5; color: #7b1fa2;">Négociation</span>
+                        </div>
+                        <div class="opp-details">
+                            <div>💰 280 000€</div>
+                            <div>⏰ Closing: 15/07/2026</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="see-more-btn">Voir toutes les opps</button>
+            </div>
+
+            <!-- Interactions Historique -->
+            <div class="panel-section">
+                <h3>📅 Historique des interactions</h3>
+                <div class="section-content" id="interactionsList">
+                    <div class="interaction-item">
+                        <div class="type">📞 Appel avec Jean Dupont</div>
+                        <div class="date">20 juin 2026 - 14h30</div>
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+                            <strong>Opp:</strong> Migration Cloud
+                        </div>
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+                            <strong>Durée:</strong> 45 min
+                        </div>
+                        <div class="content">"Intéressé par la solution, veut un devis sous 2 semaines"</div>
+                        <div class="meta">
+                            <span>👤 Alice Martin</span>
+                            <button style="background: none; border: none; color: #999; cursor: pointer;">✏️</button>
+                        </div>
+                    </div>
+
+                    <div class="interaction-item">
+                        <div class="type">📧 Email à Marie Martin</div>
+                        <div class="date">18 juin 2026 - 10h15</div>
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+                            <strong>Opp:</strong> Audit Sécurité
+                        </div>
+                        <div class="content">"Envoi du devis pour l'audit de sécurité informatique"</div>
+                        <div class="meta">
+                            <span>👤 Bob Leclerc</span>
+                            <button style="background: none; border: none; color: #999; cursor: pointer;">✏️</button>
+                        </div>
+                    </div>
+
+                    <div class="interaction-item">
+                        <div class="type">🤝 Réunion Zoom</div>
+                        <div class="date">15 juin 2026 - 11h00</div>
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+                            <strong>Opp:</strong> Support Annuel
+                        </div>
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+                            <strong>Durée:</strong> 1h30
+                        </div>
+                        <div class="content">"Discussion pricing et négociation du contrat de support"</div>
+                        <div class="meta">
+                            <span>👤 Alice Martin</span>
+                            <button style="background: none; border: none; color: #999; cursor: pointer;">✏️</button>
+                        </div>
+                    </div>
+                </div>
+                <button class="see-more-btn">Voir tout l'historique</button>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════
+             MODAL EDIT
+             ════════════════════════════════════════════════════════ -->
+        <div class="modal-overlay" id="modalOverlay">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2>Modifier entreprise</h2>
+                    <button class="btn-close" id="closeModalBtn">✕</button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <div class="form-group">
+                            <label>Nom entreprise</label>
+                            <input type="text" name="nom" value="Startup XYZ">
+                        </div>
+                        <div class="form-group">
+                            <label>Secteur</label>
+                            <select name="secteur">
+                                <option value="Tech" selected>Tech</option>
+                                <option value="Finance">Finance</option>
+                                <option value="Digital">Digital</option>
+                                <option value="Conseil">Conseil</option>
+                                <option value="Retail">Retail</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Ville</label>
+                            <input type="text" name="ville" value="Paris">
+                        </div>
+                        <div class="form-group">
+                            <label>Site web</label>
+                            <input type="text" name="site" placeholder="https://example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Téléphone</label>
+                            <input type="text" name="tel" placeholder="+33 1 23 45 67">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea name="description" placeholder="Notes sur l'entreprise..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" id="cancelEditBtn">Annuler</button>
+                    <button class="btn-primary">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ════════════════════════════════════════════════════════
+        //  MULTI-SELECT DROPDOWN LOGIC
+        // ════════════════════════════════════════════════════════
+
+        function initMultiSelect(filterId, dropdownId, buttonId, tagsId) {
+            const button = document.getElementById(buttonId);
+            const dropdown = document.getElementById(dropdownId);
+            const tagsContainer = document.getElementById(tagsId);
+            const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+
+            button.addEventListener('click', () => {
+                dropdown.classList.toggle('open');
+            });
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    updateMultiSelectTags(checkboxes, tagsContainer, button);
+                });
+            });
+
+            // Fermer au clic extérieur
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest(`#${filterId}`)) {
+                    dropdown.classList.remove('open');
+                }
+            });
+        }
+
+        function updateMultiSelectTags(checkboxes, tagsContainer, button) {
+            tagsContainer.innerHTML = '';
+            const selected = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            if (selected.length === 0) {
+                button.innerHTML = `📋 Tous<span style="margin-left: auto; font-size: 12px;">▼</span>`;
+                button.classList.remove('active');
+            } else {
+                button.innerHTML = `📋 ${selected.length} sélectionné(s)<span style="margin-left: auto; font-size: 12px;">▼</span>`;
+                button.classList.add('active');
+
+                selected.forEach(value => {
+                    const tag = document.createElement('div');
+                    tag.className = 'filter-tag';
+                    tag.innerHTML = `
+                        ${value}
+                        <button type="button">×</button>
+                    `;
+                    tag.querySelector('button').addEventListener('click', () => {
+                        const checkbox = Array.from(checkboxes).find(cb => cb.value === value);
+                        checkbox.checked = false;
+                        updateMultiSelectTags(checkboxes, tagsContainer, button);
+                    });
+                    tagsContainer.appendChild(tag);
+                });
+            }
+        }
+
+        // Initialiser les filtres multi-select
+        initMultiSelect('sectorFilter', 'sectorDropdown', 'sectorBtn', 'sectorTags');
+        initMultiSelect('cityFilter', 'cityDropdown', 'cityBtn', 'cityTags');
+
+        // ════════════════════════════════════════════════════════
+        //  SLIDER
+        // ════════════════════════════════════════════════════════
+
+        document.getElementById('oppSlider').addEventListener('input', (e) => {
+            document.getElementById('sliderValue').textContent = e.target.value + '+';
+        });
+
+        // ════════════════════════════════════════════════════════
+        //  SIDE PANEL LOGIC
+        // ════════════════════════════════════════════════════════
+
+        // Ouvrir panel au clic sur ligne
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', (e) => {
+                if (e.target.closest('.btn-edit')) return;
+                document.getElementById('sidePanel').classList.add('open');
+            });
+        });
+
+        // Fermer panel
+        document.getElementById('closePanelBtn').addEventListener('click', () => {
+            document.getElementById('sidePanel').classList.remove('open');
+        });
+
+        // ════════════════════════════════════════════════════════
+        //  MODAL EDIT LOGIC
+        // ════════════════════════════════════════════════════════
+
+        // Bouton modifier dans le panel
+        document.getElementById('editBtn').addEventListener('click', () => {
+            document.getElementById('modalOverlay').classList.add('open');
+        });
+
+        // Boutons modifier sur les lignes
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('sidePanel').classList.add('open');
+                setTimeout(() => {
+                    document.getElementById('modalOverlay').classList.add('open');
+                }, 100);
+            });
+        });
+
+        // Fermer modal
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            document.getElementById('modalOverlay').classList.remove('open');
+        });
+
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            document.getElementById('modalOverlay').classList.remove('open');
+        });
+
+        // Reset filtres
+        document.getElementById('resetFilters').addEventListener('click', () => {
+            document.querySelectorAll('.multi-select-dropdown input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            document.getElementById('oppSlider').value = 0;
+            document.getElementById('sliderValue').textContent = '0+';
+            document.getElementById('searchInput').value = '';
+
+            updateMultiSelectTags(
+                document.querySelectorAll('#sectorDropdown input[type="checkbox"]'),
+                document.getElementById('sectorTags'),
+                document.getElementById('sectorBtn')
+            );
+            updateMultiSelectTags(
+                document.querySelectorAll('#cityDropdown input[type="checkbox"]'),
+                document.getElementById('cityTags'),
+                document.getElementById('cityBtn')
+            );
+        });
+    </script>
+</body>
+</html>
